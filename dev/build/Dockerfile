@@ -11,7 +11,8 @@ RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositorie
 WORKDIR /wiki
 
 ENV npm_config_build_from_source=true \
-    npm_config_disturl=https://npmmirror.com/mirrors/node
+    npm_config_disturl=https://npmmirror.com/mirrors/node \
+    CYPRESS_INSTALL_BINARY=0
 
 # Copy dependency files first (rarely change) -> cached layer
 COPY ./package.json ./yarn.lock ./.yarnrc ./
@@ -19,7 +20,7 @@ COPY ./patches ./patches
 
 ARG CACHE_CLEAN=false
 RUN if [ "$CACHE_CLEAN" = "true" ]; then yarn cache clean; fi
-RUN yarn --frozen-lockfile --non-interactive --network-timeout 100000
+RUN yarn --frozen-lockfile --non-interactive --network-timeout 100000 --ignore-optional
 
 # Copy source files (frequently change) -> separate layer
 COPY ./client ./client
@@ -30,8 +31,36 @@ COPY ./.eslintrc.yml ./.eslintrc.yml
 
 RUN yarn build
 RUN rm -rf /wiki/node_modules
-RUN yarn --production --frozen-lockfile --non-interactive --network-timeout 100000
-RUN yarn patch-package
+RUN yarn --production --frozen-lockfile --non-interactive --network-timeout 100000 --ignore-optional && \
+    yarn patch-package && \
+    # Clean up unnecessary files to reduce image size
+    find /wiki/node_modules -type f \( \
+        -name "*.md" -o \
+        -name "*.map" -o \
+        -name "*.ts" -o \
+        -name "*.tsx" -o \
+        -name ".editorconfig" -o \
+        -name ".eslintrc*" -o \
+        -name ".prettierrc*" -o \
+        -name ".babelrc*" -o \
+        -name "tsconfig.json" -o \
+        -name "jest.config.js" -o \
+        -name "webpack.config.js" \
+    \) -delete && \
+    find /wiki/node_modules -type d \( \
+        -name "test" -o \
+        -name "tests" -o \
+        -name "__tests__" -o \
+        -name "docs" -o \
+        -name "doc" -o \
+        -name "examples" -o \
+        -name "demo" -o \
+        -name "samples" -o \
+        -name ".github" -o \
+        -name ".git" -o \
+        -name "man" -o \
+        -name "benchmark" \
+    \) -exec rm -rf {} + 2>/dev/null || true
 
 # ===============
 # --- Release ---
@@ -54,7 +83,6 @@ COPY --chown=node:node ./server ./server
 COPY --chown=node:node --from=assets /wiki/server/views ./server/views
 COPY --chown=node:node ./dev/build/config.yml ./config.yml
 COPY --chown=node:node ./package.json ./package.json
-COPY --chown=node:node ./LICENSE ./LICENSE
 
 USER node
 

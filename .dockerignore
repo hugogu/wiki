@@ -1,0 +1,80 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# Development files
+dev/
+!dev/build/
+!dev/build/config.yml
+!dev/webpack/
+!dev/templates/
+coverage/
+tests/
+test/
+__tests__/
+*.test.js
+*.spec.js
+cypress/
+cypress.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build artifacts (will be rebuilt in container)
+assets/
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
+
+# Docker
+Dockerfile*
+docker-compose*
+.docker/
+
+# Node modules (will be installed in container)
+node_modules/
+
+# Patch backups
+*.orig
