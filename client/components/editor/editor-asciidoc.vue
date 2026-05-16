@@ -127,6 +127,7 @@
 
 <script>
 import _ from 'lodash'
+import { Base64 } from 'js-base64'
 import { get, sync } from 'vuex-pathify'
 import DOMPurify from 'dompurify'
 
@@ -162,6 +163,14 @@ const asciidoctor = asciidoctorFactory()
 
 // Platform detection
 const CtrlKey = /Mac/.test(navigator.platform) ? 'Cmd' : 'Ctrl'
+
+const decodeBase64Text = (value) => {
+  if (!value) {
+    return ''
+  }
+
+  return Base64.decode(value)
+}
 
 // ========================================
 // HELPER FUNCTIONS
@@ -224,7 +233,7 @@ export default {
       })
 
       $('pre.highlight > code.language-diagram').each((i, elm) => {
-        const diagramContent = Buffer.from($(elm).html(), 'base64').toString()
+        const diagramContent = decodeBase64Text($(elm).html())
         $(elm).parent().replaceWith(`<pre class="diagram">${diagramContent}</div>`)
       })
 
@@ -353,7 +362,7 @@ export default {
                     this.cm.doc.setSelection({ line: start, ch: 0 }, { line: end, ch: 3 })
                     try {
                       const raw = this.cm.doc.getLine(end - 1)
-                      this.$store.set('editor/activeModalData', Buffer.from(raw, 'base64').toString())
+                      this.$store.set('editor/activeModalData', decodeBase64Text(raw))
                       this.toggleModal(`editorModalDrawio`)
                     } catch (err) {
                       return this.$store.commit('showNotification', {

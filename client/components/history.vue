@@ -134,6 +134,15 @@ import * as Diff2Html from 'diff2html'
 import { createPatch } from 'diff'
 import _ from 'lodash'
 import gql from 'graphql-tag'
+import { Base64 } from 'js-base64'
+
+const decodeBase64JSON = (value, fallback = null) => {
+  if (!value) {
+    return fallback
+  }
+
+  return JSON.parse(Base64.decode(value))
+}
 
 export default {
   i18nOptions: { namespaces: 'history' },
@@ -321,9 +330,7 @@ export default {
 
     this.target = this.cache[0]
 
-    if (this.effectivePermissions) {
-      this.$store.set('page/effectivePermissions', JSON.parse(Buffer.from(this.effectivePermissions, 'base64').toString()))
-    }
+    this.$store.set('page/effectivePermissions', decodeBase64JSON(this.effectivePermissions, {}))
   },
   methods: {
     async loadVersion (versionId) {

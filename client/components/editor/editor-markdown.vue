@@ -209,7 +209,7 @@ import mdSub from 'markdown-it-sub'
 import mdMark from 'markdown-it-mark'
 import mdMultiTable from 'markdown-it-multimd-table'
 import mdFootnote from 'markdown-it-footnote'
-import mdImsize from 'markdown-it-imsize'
+import mdImsize from './common/md-imsize'
 import katex from 'katex'
 import underline from '../../libs/markdown-it-underline'
 import 'katex/dist/contrib/mhchem'
@@ -221,6 +221,7 @@ import Prism from 'prismjs'
 import 'prismjs/plugins/autoloader/prism-autoloader'
 import 'prismjs/plugins/line-numbers/prism-line-numbers'
 import 'prismjs/plugins/normalize-whitespace/prism-normalize-whitespace'
+import { Base64 } from 'js-base64'
 
 // Mermaid
 import mermaid from 'mermaid'
@@ -248,6 +249,14 @@ Prism.plugins.NormalizeWhitespace.setDefaults({
   'tabs-to-spaces': 2
 })
 
+const decodeBase64Text = (value) => {
+  if (!value) {
+    return ''
+  }
+
+  return Base64.decode(value)
+}
+
 // Markdown Instance
 const md = new MarkdownIt({
   html: true,
@@ -256,7 +265,7 @@ const md = new MarkdownIt({
   typography: true,
   highlight(str, lang) {
     if (lang === 'diagram') {
-      return `<pre class="diagram">` + Buffer.from(str, 'base64').toString() + `</pre>`
+      return `<pre class="diagram">` + decodeBase64Text(str) + `</pre>`
     } else if (['mermaid', 'plantuml'].includes(lang)) {
       return `<pre class="codeblock-${lang}"><code>${_.escape(str)}</code></pre>`
     } else {
@@ -697,7 +706,7 @@ export default {
                     this.cm.doc.setSelection({ line: start, ch: 0 }, { line: end, ch: 3 })
                     try {
                       const raw = this.cm.doc.getLine(end - 1)
-                      this.$store.set('editor/activeModalData', Buffer.from(raw, 'base64').toString())
+                      this.$store.set('editor/activeModalData', decodeBase64Text(raw))
                       this.toggleModal(`editorModalDrawio`)
                     } catch (err) {
                       return this.$store.commit('showNotification', {

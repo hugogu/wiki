@@ -28,6 +28,16 @@
 </template>
 
 <script>
+import { Base64 } from 'js-base64'
+
+const decodeBase64JSON = (value, fallback = null) => {
+  if (!value) {
+    return fallback
+  }
+
+  return JSON.parse(Base64.decode(value))
+}
+
 export default {
   props: {
     pageId: {
@@ -65,9 +75,7 @@ export default {
 
     this.$store.commit('page/SET_MODE', 'source')
 
-    if (this.effectivePermissions) {
-      this.$store.set('page/effectivePermissions', JSON.parse(Buffer.from(this.effectivePermissions, 'base64').toString()))
-    }
+    this.$store.set('page/effectivePermissions', decodeBase64JSON(this.effectivePermissions, {}))
   },
   methods: {
     goLive() {

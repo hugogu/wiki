@@ -69,24 +69,32 @@ import editorStore from '../store/editor'
 
 WIKI.$store.registerModule('editor', editorStore)
 
+const decodeBase64JSON = (value, fallback = null) => {
+  if (!value) {
+    return fallback
+  }
+
+  return JSON.parse(Base64.decode(value))
+}
+
 export default {
   i18nOptions: { namespaces: 'editor' },
   components: {
     AtomSpinner,
     StatusIndicator,
-    editorApi: () => import(/* webpackChunkName: "editor-api", webpackMode: "lazy" */ './editor/editor-api.vue'),
-    editorCode: () => import(/* webpackChunkName: "editor-code", webpackMode: "lazy" */ './editor/editor-code.vue'),
-    editorCkeditor: () => import(/* webpackChunkName: "editor-ckeditor", webpackMode: "lazy" */ './editor/editor-ckeditor.vue'),
-    editorAsciidoc: () => import(/* webpackChunkName: "editor-asciidoc", webpackMode: "lazy" */ './editor/editor-asciidoc.vue'),
-    editorMarkdown: () => import(/* webpackChunkName: "editor-markdown", webpackMode: "lazy" */ './editor/editor-markdown.vue'),
-    editorRedirect: () => import(/* webpackChunkName: "editor-redirect", webpackMode: "lazy" */ './editor/editor-redirect.vue'),
-    editorModalEditorselect: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-editorselect.vue'),
-    editorModalProperties: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-properties.vue'),
-    editorModalUnsaved: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-unsaved.vue'),
-    editorModalMedia: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-media.vue'),
-    editorModalBlocks: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-blocks.vue'),
-    editorModalConflict: () => import(/* webpackChunkName: "editor-conflict", webpackMode: "lazy" */ './editor/editor-modal-conflict.vue'),
-    editorModalDrawio: () => import(/* webpackChunkName: "editor", webpackMode: "eager" */ './editor/editor-modal-drawio.vue')
+    editorApi: () => import('./editor/editor-api.vue'),
+    editorCode: () => import('./editor/editor-code.vue'),
+    editorCkeditor: () => import('./editor/editor-ckeditor.vue'),
+    editorAsciidoc: () => import('./editor/editor-asciidoc.vue'),
+    editorMarkdown: () => import('./editor/editor-markdown.vue'),
+    editorRedirect: () => import('./editor/editor-redirect.vue'),
+    editorModalEditorselect: () => import('./editor/editor-modal-editorselect.vue'),
+    editorModalProperties: () => import('./editor/editor-modal-properties.vue'),
+    editorModalUnsaved: () => import('./editor/editor-modal-unsaved.vue'),
+    editorModalMedia: () => import('./editor/editor-modal-media.vue'),
+    editorModalBlocks: () => import('./editor/editor-modal-blocks.vue'),
+    editorModalConflict: () => import('./editor/editor-modal-conflict.vue'),
+    editorModalDrawio: () => import('./editor/editor-modal-drawio.vue')
   },
   props: {
     locale: {
@@ -231,9 +239,7 @@ export default {
 
     this.checkoutDateActive = this.checkoutDate
 
-    if (this.effectivePermissions) {
-      this.$store.set('page/effectivePermissions', JSON.parse(Buffer.from(this.effectivePermissions, 'base64').toString()))
-    }
+    this.$store.set('page/effectivePermissions', decodeBase64JSON(this.effectivePermissions, {}))
   },
   mounted() {
     this.$store.set('editor/mode', this.initMode || 'create')
@@ -245,7 +251,7 @@ export default {
         this.dialogEditorSelector = true
       }, 500)
     } else {
-      this.currentEditor = `editor${_.startCase(this.initEditor || 'markdown')}`
+      this.$store.set('editor/editor', `editor${_.startCase(this.initEditor || 'markdown')}`)
     }
 
     window.onbeforeunload = () => {
