@@ -218,6 +218,9 @@ import plantuml from './markdown/plantuml'
 
 // Prism (Syntax Highlighting)
 import Prism from 'prismjs'
+import 'prismjs/plugins/autoloader/prism-autoloader'
+import 'prismjs/plugins/line-numbers/prism-line-numbers'
+import 'prismjs/plugins/normalize-whitespace/prism-normalize-whitespace'
 
 // Mermaid
 import mermaid from 'mermaid'

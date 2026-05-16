@@ -1,26 +1,33 @@
-require('core-js/stable')
-require('regenerator-runtime/runtime')
+import 'core-js/stable'
+import 'regenerator-runtime/runtime'
+import './libs/modernizr/modernizr.js'
+import './libs/prism/prism.css'
+import 'prismjs/plugins/toolbar/prism-toolbar.css'
+import './scss/app.scss'
+import './helpers/compatibility.js'
+import './client-app.js'
+import '@mdi/font/css/materialdesignicons.css'
 
 /* global siteConfig */
 /* eslint-disable no-unused-expressions */
 
-switch (window.document.documentElement.lang) {
-  case 'ar':
-  case 'fa':
-    import(/* webpackChunkName: "fonts-arabic" */ './scss/fonts/arabic.scss')
-    break
-  default:
-    import(/* webpackChunkName: "fonts-default" */ './scss/fonts/default.scss')
-    break
+const fontLoaders = {
+  ar: () => import('./scss/fonts/arabic.scss'),
+  fa: () => import('./scss/fonts/arabic.scss'),
+  default: () => import('./scss/fonts/default.scss')
 }
 
-require('modernizr')
+const themeStyleLoaders = import.meta.glob('./themes/*/scss/app.scss')
+const themeScriptLoaders = import.meta.glob('./themes/*/js/app.js')
+const themeStylePath = `./themes/${siteConfig.theme}/scss/app.scss`
+const themeScriptPath = `./themes/${siteConfig.theme}/js/app.js`
 
-require('./scss/app.scss')
-import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/scss/app.scss')
+const activeFontLoader = fontLoaders[window.document.documentElement.lang] || fontLoaders.default
+activeFontLoader()
 
-import(/* webpackChunkName: "mdi" */ '@mdi/font/css/materialdesignicons.css')
+if (!themeStyleLoaders[themeStylePath] || !themeScriptLoaders[themeScriptPath]) {
+  throw new Error(`Theme assets not found for ${siteConfig.theme}`)
+}
 
-require('./helpers/compatibility.js')
-require('./client-app.js')
-import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/js/app.js')
+themeStyleLoaders[themeStylePath]()
+themeScriptLoaders[themeScriptPath]()

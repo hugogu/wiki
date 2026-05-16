@@ -1,11 +1,8 @@
-require('core-js/stable')
-require('regenerator-runtime/runtime')
+import 'core-js/stable'
+import 'regenerator-runtime/runtime'
+import './scss/app.scss'
+import './helpers/compatibility.js'
+import './client-setup.js'
+import '@mdi/font/css/materialdesignicons.css'
 
 /* eslint-disable no-unused-expressions */
-
-require('./scss/app.scss')
-import(/* webpackChunkName: "mdi" */ '@mdi/font/css/materialdesignicons.css')
-
-require('./helpers/compatibility.js')
-
-require('./client-setup.js')

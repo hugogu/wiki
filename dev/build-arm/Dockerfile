@@ -3,6 +3,8 @@
 # =========================
 ARG BASE_IMAGE=node:24-alpine
 FROM ${BASE_IMAGE} AS build
+ARG NODE_ENV=production
+ARG YARN_REGISTRY=https://registry.npmjs.org
 
 RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositories && \
     apk add yarn g++ make cmake python3 py3-setuptools --no-cache
@@ -10,7 +12,10 @@ RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositorie
 WORKDIR /wiki
 
 ENV npm_config_build_from_source=true \
-    npm_config_disturl=https://npmmirror.com/mirrors/node
+    npm_config_disturl=https://npmmirror.com/mirrors/node \
+    NODE_ENV=${NODE_ENV}
+
+RUN yarn config set registry "${YARN_REGISTRY}"
 
 COPY ./package.json ./yarn.lock ./.yarnrc ./
 COPY ./patches ./patches
@@ -23,6 +28,8 @@ RUN yarn patch-package
 # ===============
 FROM ${BASE_IMAGE}
 LABEL maintainer="requarks.io"
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
 RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositories && \
     apk add bash curl git openssh gnupg sqlite --no-cache && \
@@ -36,7 +43,6 @@ WORKDIR /wiki
 COPY --chown=node:node ./build/assets ./assets
 COPY --chown=node:node --from=build /wiki/node_modules ./node_modules
 COPY --chown=node:node ./server ./server
-COPY --chown=node:node ./build/server/views ./server/views
 COPY --chown=node:node ./dev/build/config.yml ./config.yml
 COPY --chown=node:node ./build/package.json ./package.json
 COPY --chown=node:node ./LICENSE ./LICENSE

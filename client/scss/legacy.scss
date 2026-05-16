@@ -1,8 +1,8 @@
 @import "global";
 
 @import "./base/icons.scss";
-@import '~katex/dist/katex.min.css';
-@import '~@mdi/font/css/materialdesignicons.css';
+@import 'katex/dist/katex.min.css';
+@import '@mdi/font/css/materialdesignicons.css';
 
 .mdi {
   font-family: 'Material Design Icons', sans-serif;

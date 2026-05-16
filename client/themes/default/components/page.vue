@@ -361,15 +361,28 @@ import { StatusIndicator } from 'vue-status-indicator'
 import Tabset from './tabset.vue'
 import NavSidebar from './nav-sidebar.vue'
 import Prism from 'prismjs'
+import 'prismjs/plugins/autoloader/prism-autoloader'
+import 'prismjs/plugins/line-numbers/prism-line-numbers'
+import 'prismjs/plugins/normalize-whitespace/prism-normalize-whitespace'
+import 'prismjs/plugins/toolbar/prism-toolbar'
 import mermaid from 'mermaid'
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import ClipboardJS from 'clipboard'
 import Vue from 'vue'
+import { Base64 } from 'js-base64'
 
 /* global siteLangs */
 
 Vue.component('Tabset', Tabset)
+
+const decodeBase64JSON = (value, fallback = null) => {
+  if (!value) {
+    return fallback
+  }
+
+  return JSON.parse(Base64.decode(value))
+}
 
 Prism.plugins.autoloader.languages_path = '/_assets/js/prism/'
 Prism.plugins.NormalizeWhitespace.setDefaults({
@@ -558,10 +571,10 @@ export default {
       }
     },
     sidebarDecoded () {
-      return JSON.parse(Buffer.from(this.sidebar, 'base64').toString())
+      return decodeBase64JSON(this.sidebar, [])
     },
     tocDecoded () {
-      return JSON.parse(Buffer.from(this.toc, 'base64').toString())
+      return decodeBase64JSON(this.toc, [])
     },
     tocPosition: get('site/tocPosition'),
     hasAdminPermission: get('page/effectivePermissions@system.manage'),
@@ -597,10 +610,10 @@ export default {
     this.$store.set('page/editor', this.editor)
     this.$store.set('page/updatedAt', this.updatedAt)
     if (this.effectivePermissions) {
-      this.$store.set('page/effectivePermissions', JSON.parse(Buffer.from(this.effectivePermissions, 'base64').toString()))
+      this.$store.set('page/effectivePermissions', decodeBase64JSON(this.effectivePermissions, {}))
     }
     if (this.editShortcuts) {
-      this.$store.set('page/editShortcuts', JSON.parse(Buffer.from(this.editShortcuts, 'base64').toString()))
+      this.$store.set('page/editShortcuts', decodeBase64JSON(this.editShortcuts, {}))
     }
 
     this.$store.set('page/mode', 'view')

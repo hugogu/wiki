@@ -11,7 +11,8 @@ import { ErrorLink } from 'apollo-link-error'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { getMainDefinition } from 'apollo-utilities'
 import VueApollo from 'vue-apollo'
-import Vuetify from 'vuetify/lib'
+import Vuetify from 'vuetify'
+import 'vuetify/dist/vuetify.min.css'
 import Velocity from 'velocity-animate'
 import Vuescroll from 'vuescroll/dist/vuescroll-native'
 import Hammer from 'hammerjs'
@@ -32,6 +33,115 @@ import localization from './modules/localization'
 // ====================================
 
 import helpers from './helpers'
+
+const themeComponentLoaders = import.meta.glob('./themes/*/components/*.vue')
+const getThemeComponentLoader = (componentName) => {
+  const componentPath = `./themes/${siteConfig.theme}/components/${componentName}.vue`
+  const loader = themeComponentLoaders[componentPath]
+
+  if (!loader) {
+    throw new Error(`Theme component not found: ${componentPath}`)
+  }
+
+  return loader
+}
+
+const readStringAttribute = (el, name, fallback = '') => {
+  const value = el.getAttribute(name)
+  return value === null ? fallback : value
+}
+
+const readNumberAttribute = (el, name, fallback = 0) => {
+  const value = el.getAttribute(name)
+  return value === null ? fallback : Number(value)
+}
+
+const readBooleanAttribute = (el, name, fallback = false) => {
+  if (!el.hasAttribute(name)) {
+    return fallback
+  }
+
+  const value = el.getAttribute(name)
+  return value === '' || value === 'true'
+}
+
+const readJSONAttribute = (el, name, fallback) => {
+  const value = el.getAttribute(name)
+
+  if (value === null) {
+    return fallback
+  }
+
+  try {
+    return JSON.parse(value)
+  } catch (err) {
+    console.warn(`Unable to parse JSON attribute ${name}.`, err)
+    return fallback
+  }
+}
+
+const buildPageMountOptions = () => {
+  const rootEl = document.getElementById('root')
+  const pageEl = rootEl ? rootEl.querySelector(':scope > page') || rootEl.querySelector('page') : null
+
+  if (!pageEl) {
+    return null
+  }
+
+  const contentsTemplate = pageEl.querySelector('template[slot="contents"]')
+  const commentsTemplate = pageEl.querySelector('template[slot="comments"]')
+
+  const pageProps = {
+    pageId: readNumberAttribute(pageEl, ':page-id'),
+    locale: readStringAttribute(pageEl, 'locale', 'en'),
+    path: readStringAttribute(pageEl, 'path', 'home'),
+    title: readStringAttribute(pageEl, 'title', 'Untitled Page'),
+    description: readStringAttribute(pageEl, 'description'),
+    createdAt: readStringAttribute(pageEl, 'created-at'),
+    updatedAt: readStringAttribute(pageEl, 'updated-at'),
+    tags: readJSONAttribute(pageEl, ':tags', []),
+    authorName: readStringAttribute(pageEl, 'author-name', 'Unknown'),
+    authorId: readNumberAttribute(pageEl, ':author-id'),
+    editor: readStringAttribute(pageEl, 'editor'),
+    isPublished: readBooleanAttribute(pageEl, ':is-published'),
+    toc: readStringAttribute(pageEl, 'toc'),
+    sidebar: readStringAttribute(pageEl, 'sidebar'),
+    navMode: readStringAttribute(pageEl, 'nav-mode', 'MIXED'),
+    commentsEnabled: readBooleanAttribute(pageEl, 'comments-enabled'),
+    effectivePermissions: readStringAttribute(pageEl, 'effective-permissions'),
+    commentsExternal: readBooleanAttribute(pageEl, 'comments-external'),
+    editShortcuts: readStringAttribute(pageEl, 'edit-shortcuts'),
+    filename: readStringAttribute(pageEl, 'filename')
+  }
+
+  return {
+    render(h) {
+      const slotNodes = []
+
+      if (contentsTemplate) {
+        slotNodes.push(h('div', {
+          slot: 'contents',
+          domProps: {
+            innerHTML: contentsTemplate.innerHTML
+          }
+        }))
+      }
+
+      if (commentsTemplate) {
+        slotNodes.push(h('div', {
+          slot: 'comments',
+          domProps: {
+            innerHTML: commentsTemplate.innerHTML
+          }
+        }))
+      }
+
+      return h('Page', {
+        props: pageProps
+      }, slotNodes)
+    }
+  }
+}
 
 // ====================================
 // Initialize Global Vars
@@ -128,7 +238,7 @@ window.graphQL = new ApolloClient({
     return kind === 'OperationDefinition' && operation === 'subscription'
   }, graphQLWSLink, graphQLLink),
   cache: new InMemoryCache(),
-  connectToDevTools: (process.env.node_env === 'development')
+  connectToDevTools: import.meta.env.DEV
 })
 
 // ====================================
@@ -174,8 +284,8 @@ Vue.component('VCardChin', () => import(/* webpackPrefetch: true, webpackChunkNa
 Vue.component('VCardInfo', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/v-card-info.vue'))
 Vue.component('Welcome', () => import(/* webpackChunkName: "welcome" */ './components/welcome.vue'))
 
-Vue.component('NavFooter', () => import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/components/nav-footer.vue'))
-Vue.component('Page', () => import(/* webpackChunkName: "theme" */ './themes/' + siteConfig.theme + '/components/page.vue'))
+Vue.component('NavFooter', () => getThemeComponentLoader('nav-footer')())
+Vue.component('Page', () => getThemeComponentLoader('page')())
 
 let bootstrap = () => {
   // ====================================
@@ -183,7 +293,7 @@ let bootstrap = () => {
   // ====================================
 
   window.addEventListener('beforeunload', () => {
-    store.dispatch('startLoading')
+    store.commit('loadingStart', 'page-unload')
   })
 
   const apolloProvider = new VueApollo({
@@ -200,6 +310,8 @@ let bootstrap = () => {
   if ((store.get('user/appearance') || '').length > 0) {
     darkModeEnabled = (store.get('user/appearance') === 'dark')
   }
+
+  const pageMountOptions = buildPageMountOptions()
 
   window.WIKI = new Vue({
     el: '#root',
@@ -226,7 +338,8 @@ let bootstrap = () => {
       if ((store.get('user/timezone') || '').length > 0) {
         this.$moment.tz.setDefault(store.get('user/timezone'))
       }
-    }
+    },
+    ...(pageMountOptions || {})
   })
 
   // ----------------------------------

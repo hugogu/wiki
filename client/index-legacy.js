@@ -1,4 +1,4 @@
-require('./scss/legacy.scss')
-require('./scss/fonts/default.scss')
+import './scss/legacy.scss'
+import './scss/fonts/default.scss'
 
 window.WIKI = null

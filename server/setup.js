@@ -22,6 +22,7 @@ module.exports = () => {
   }
 
   WIKI.system = require('./core/system')
+  WIKI.clientAssets = require('./helpers/client-assets').init()
 
   // ----------------------------------------
   // Define Express App
@@ -34,8 +35,12 @@ module.exports = () => {
   // Public Assets
   // ----------------------------------------
 
-  app.use(favicon(path.join(WIKI.ROOTPATH, 'assets', 'favicon.ico')))
-  app.use('/_assets', express.static(path.join(WIKI.ROOTPATH, 'assets')))
+  const staticAssetRoot = global.DEV
+    ? path.join(WIKI.ROOTPATH, 'client', 'static')
+    : path.join(WIKI.ROOTPATH, 'assets')
+
+  app.use(favicon(path.join(staticAssetRoot, 'favicon.ico')))
+  app.use('/_assets', express.static(staticAssetRoot))
 
   // ----------------------------------------
   // View Engine Setup
@@ -51,14 +56,14 @@ module.exports = () => {
   app.locals.data = WIKI.data
   app.locals._ = require('lodash')
   app.locals.devMode = WIKI.devMode
+  app.locals.clientAssets = WIKI.clientAssets
 
   // ----------------------------------------
   // HMR (Dev Mode Only)
   // ----------------------------------------
 
   if (global.DEV) {
-    app.use(global.WP_DEV.devMiddleware)
-    app.use(global.WP_DEV.hotMiddleware)
+    app.use(global.VITE_DEV.server.middlewares)
   }
 
   // ----------------------------------------

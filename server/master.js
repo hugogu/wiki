@@ -21,6 +21,7 @@ module.exports = async () => {
   WIKI.lang = require('./core/localization').init()
   WIKI.mail = require('./core/mail').init()
   WIKI.system = require('./core/system').init()
+  WIKI.clientAssets = require('./helpers/client-assets').init()
 
   // ----------------------------------------
   // Load middlewares
@@ -52,7 +53,11 @@ module.exports = async () => {
   // Public Assets
   // ----------------------------------------
 
-  app.use(favicon(path.join(WIKI.ROOTPATH, 'assets', 'favicon.ico')))
+  const staticAssetRoot = global.DEV
+    ? path.join(WIKI.ROOTPATH, 'client', 'static')
+    : path.join(WIKI.ROOTPATH, 'assets')
+
+  app.use(favicon(path.join(staticAssetRoot, 'favicon.ico')))
   app.use('/_assets/svg/twemoji', async (req, res, next) => {
     try {
       WIKI.asar.serve('twemoji', req, res, next)
@@ -60,9 +65,13 @@ module.exports = async () => {
       res.sendStatus(404)
     }
   })
-  app.use('/_assets', express.static(path.join(WIKI.ROOTPATH, 'assets'), {
+  app.use('/_assets/js/prism', express.static(path.join(WIKI.ROOTPATH, 'node_modules', 'prismjs', 'components'), {
     index: false,
-    maxAge: '7d'
+    maxAge: global.DEV ? 0 : '7d'
+  }))
+  app.use('/_assets', express.static(staticAssetRoot, {
+    index: false,
+    maxAge: global.DEV ? 0 : '7d'
   }))
 
   // ----------------------------------------
@@ -130,14 +139,14 @@ module.exports = async () => {
     url: '/'
   }
   app.locals.devMode = WIKI.devMode
+  app.locals.clientAssets = WIKI.clientAssets
 
   // ----------------------------------------
   // HMR (Dev Mode Only)
   // ----------------------------------------
 
   if (global.DEV) {
-    app.use(global.WP_DEV.devMiddleware)
-    app.use(global.WP_DEV.hotMiddleware)
+    app.use(global.VITE_DEV.server.middlewares)
   }
 
   // ----------------------------------------

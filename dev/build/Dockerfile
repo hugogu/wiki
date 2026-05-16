@@ -3,6 +3,7 @@
 # ====================
 ARG BASE_IMAGE=node:24-alpine
 FROM ${BASE_IMAGE} AS assets
+ARG YARN_REGISTRY=https://registry.npmjs.org
 
 # Use China mirror for Alpine packages
 RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositories && \
@@ -14,20 +15,20 @@ ENV npm_config_build_from_source=true \
     npm_config_disturl=https://npmmirror.com/mirrors/node \
     CYPRESS_INSTALL_BINARY=0
 
+RUN yarn config set registry "${YARN_REGISTRY}"
+
 # Copy dependency files first (rarely change) -> cached layer
 COPY ./package.json ./yarn.lock ./.yarnrc ./
 COPY ./patches ./patches
 
 ARG CACHE_CLEAN=false
 RUN if [ "$CACHE_CLEAN" = "true" ]; then yarn cache clean; fi
-RUN yarn --frozen-lockfile --non-interactive --network-timeout 100000 --ignore-optional
+RUN yarn --frozen-lockfile --non-interactive --network-timeout 100000
 
 # Copy source files (frequently change) -> separate layer
 COPY ./client ./client
 COPY ./dev ./dev
-COPY ./.babelrc ./.babelrc
-COPY ./.eslintignore ./.eslintignore
-COPY ./.eslintrc.yml ./.eslintrc.yml
+COPY ./vite.config.mjs ./vite.config.mjs
 
 RUN yarn build
 RUN rm -rf /wiki/node_modules
@@ -45,7 +46,8 @@ RUN yarn --production --frozen-lockfile --non-interactive --network-timeout 1000
         -name ".babelrc*" -o \
         -name "tsconfig.json" -o \
         -name "jest.config.js" -o \
-        -name "webpack.config.js" \
+        -name "webpack.config.js" -o \
+        -name "vite.config.*" \
     \) -delete && \
     find /wiki/node_modules -type d \( \
         -name "test" -o \
@@ -67,6 +69,8 @@ RUN yarn --production --frozen-lockfile --non-interactive --network-timeout 1000
 # ===============
 FROM ${BASE_IMAGE}
 LABEL maintainer="requarks.io"
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 
 RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositories && \
     apk add bash curl git openssh gnupg sqlite --no-cache && \
@@ -80,7 +84,6 @@ WORKDIR /wiki
 COPY --chown=node:node --from=assets /wiki/assets ./assets
 COPY --chown=node:node --from=assets /wiki/node_modules ./node_modules
 COPY --chown=node:node ./server ./server
-COPY --chown=node:node --from=assets /wiki/server/views ./server/views
 COPY --chown=node:node ./dev/build/config.yml ./config.yml
 COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./LICENSE ./LICENSE

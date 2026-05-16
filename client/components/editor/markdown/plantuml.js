@@ -1,10 +1,10 @@
-const pako = require('pako')
+import pako from 'pako'
 
 // ------------------------------------
 // Markdown - PlantUML Preprocessor
 // ------------------------------------
 
-module.exports = {
+export default {
   init (mdinst, conf) {
     mdinst.use((md, opts) => {
       const openMarker = opts.openMarker || '```plantuml'

@@ -152,12 +152,13 @@ import 'codemirror/addon/fold/foldcode.js'
 import 'codemirror/addon/fold/foldgutter.js'
 import 'codemirror/addon/fold/foldgutter.css'
 import cmFold from './common/cmFold'
+import asciidoctorFactory from 'asciidoctor'
+import cheerio from 'cheerio'
 
 // ========================================
 // INIT
 // ========================================
-const asciidoctor = require('asciidoctor')()
-const cheerio = require('cheerio')
+const asciidoctor = asciidoctorFactory()
 
 // Platform detection
 const CtrlKey = /Mac/.test(navigator.platform) ? 'Cmd' : 'Ctrl'

@@ -60,10 +60,10 @@ export default {
     }
   },
   methods: {
-    goToPage (d) {
+    goToPage (d, event) {
       const id = d.data.id
       if (id) {
-        if (d3.event.ctrlKey || d3.event.metaKey) {
+        if (event && (event.ctrlKey || event.metaKey)) {
           const { href } = this.$router.resolve(String(id))
           window.open(href, '_blank')
         } else {
@@ -139,8 +139,8 @@ export default {
 
       const g = svg.append('g')
 
-      svg.call(d3.zoom().on('zoom', function() {
-        g.attr('transform', d3.event.transform)
+      svg.call(d3.zoom().on('zoom', function(event) {
+        g.attr('transform', event.transform)
       }))
 
       const link = g.append('g')
@@ -171,7 +171,7 @@ export default {
         .each(function(d) { d.text = this })
         .on('mouseover', overed)
         .on('mouseout', outed)
-        .on('click', d => this.goToPage(d))
+        .on('click', (event, d) => this.goToPage(d, event))
         .call(text => text.append('title').text(d => `${d.data.path}
           ${d.outgoing.length} outgoing
           ${d.incoming.length} incoming`))
@@ -224,8 +224,8 @@ export default {
       // we apply the translation (`g`), or else zoom is wonky
       const gZoom = svg.append('g')
 
-      svg.call(d3.zoom().on('zoom', function() {
-        gZoom.attr('transform', d3.event.transform)
+      svg.call(d3.zoom().on('zoom', function(event) {
+        gZoom.attr('transform', event.transform)
       }))
 
       const g = gZoom.append('g')
@@ -264,7 +264,7 @@ export default {
         .attr('fill', this.$vuetify.theme.dark ? 'white' : '')
         .attr('cursor', 'pointer')
         .text(d => d.data.title)
-        .on('click', d => this.goToPage(d))
+        .on('click', (event, d) => this.goToPage(d, event))
         .clone(true).lower()
         .attr('stroke', this.$vuetify.theme.dark ? '#222' : 'white')
 
@@ -288,8 +288,8 @@ export default {
 
       const g = svg.append('g')
 
-      svg.call(d3.zoom().on('zoom', function () {
-        g.attr('transform', d3.event.transform)
+      svg.call(d3.zoom().on('zoom', function (event) {
+        g.attr('transform', event.transform)
       }))
 
       // eslint-disable-next-line no-unused-vars
@@ -330,7 +330,7 @@ export default {
         .attr('fill', this.$vuetify.theme.dark ? 'white' : '')
         .attr('cursor', 'pointer')
         .text(d => d.data.title)
-        .on('click', d => this.goToPage(d))
+        .on('click', (event, d) => this.goToPage(d, event))
         .clone(true).lower()
         .attr('stroke', this.$vuetify.theme.dark ? '#222' : 'white')
 
