@@ -1,7 +1,8 @@
 # -- DEV DOCKERFILE --
 # -- DO NOT USE IN PRODUCTION! --
 
-FROM node:24
+ARG BASE_IMAGE=node:24
+FROM ${BASE_IMAGE}
 LABEL maintainer "requarks.io"
 
 RUN apt-get update && \
@@ -9,6 +10,8 @@ RUN apt-get update && \
     mkdir -p /wiki
 
 WORKDIR /wiki
+
+COPY ./.yarnrc ./.yarnrc
 
 ENV dockerdev 1
 ENV DEVDB postgres

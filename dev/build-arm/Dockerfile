@@ -1,13 +1,18 @@
 # =========================
 # --- BUILD NPM MODULES ---
 # =========================
-FROM node:24-alpine AS build
+ARG BASE_IMAGE=node:24-alpine
+FROM ${BASE_IMAGE} AS build
 
-RUN apk add yarn g++ make cmake python3 --no-cache
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositories && \
+    apk add yarn g++ make cmake python3 py3-setuptools --no-cache
 
 WORKDIR /wiki
 
-COPY ./package.json ./package.json
+ENV npm_config_build_from_source=true \
+    npm_config_disturl=https://npmmirror.com/mirrors/node
+
+COPY ./package.json ./yarn.lock ./.yarnrc ./
 COPY ./patches ./patches
 
 RUN yarn --production --frozen-lockfile --non-interactive --network-timeout 100000
@@ -16,10 +21,11 @@ RUN yarn patch-package
 # ===============
 # --- Release ---
 # ===============
-FROM node:24-alpine
+FROM ${BASE_IMAGE}
 LABEL maintainer="requarks.io"
 
-RUN apk add bash curl git openssh gnupg sqlite --no-cache && \
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.ustc.edu.cn|g' /etc/apk/repositories && \
+    apk add bash curl git openssh gnupg sqlite --no-cache && \
     mkdir -p /wiki && \
     mkdir -p /logs && \
     mkdir -p /wiki/data/content && \
