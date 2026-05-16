@@ -384,6 +384,35 @@ const decodeBase64JSON = (value, fallback = null) => {
   return JSON.parse(Base64.decode(value))
 }
 
+let mermaidId = 0
+
+const mountMermaidSvg = (container, svgMarkup) => {
+  const parsedSvg = new window.DOMParser().parseFromString(svgMarkup, 'image/svg+xml')
+  const svgNode = parsedSvg.documentElement
+
+  if (!svgNode || svgNode.nodeName === 'parsererror') {
+    container.innerHTML = svgMarkup
+    return
+  }
+
+  container.appendChild(document.importNode(svgNode, true))
+}
+
+// Unicode Private Use Area placeholders used by markdown protectMathPipes()
+const BRACE_OPEN_PH = '\uE000'
+const BRACE_CLOSE_PH = '\uE001'
+const PIPE_PH = '\uE002'
+const AMPERSAND_PH = '\uE003'
+
+function preprocessMermaidContent (text) {
+  // Restore PUA placeholders that may have been injected by protectMathPipes()
+  return text
+    .replaceAll(BRACE_OPEN_PH, '{')
+    .replaceAll(BRACE_CLOSE_PH, '}')
+    .replaceAll(PIPE_PH, '|')
+    .replaceAll(AMPERSAND_PH, '&')
+}
+
 Prism.plugins.autoloader.languages_path = '/_assets/js/prism/'
 Prism.plugins.NormalizeWhitespace.setDefaults({
   'remove-trailing': true,
@@ -632,10 +661,16 @@ export default {
     // -> Highlight Code Blocks
     Prism.highlightAllUnder(this.$refs.container)
 
-    // -> Render Mermaid diagrams
-    mermaid.mermaidAPI.initialize({
-      startOnLoad: true,
-      theme: this.$vuetify.theme.dark ? `dark` : `default`
+    // -> Prepare Mermaid renderer
+    mermaid.initialize({
+      startOnLoad: false,
+      // Mermaid's strict SVG sanitizer strips XHTML children from foreignObject labels.
+      securityLevel: 'loose',
+      theme: this.$vuetify.theme.dark ? `dark` : `default`,
+      legacyMathML: true,
+      flowchart: {
+        htmlLabels: true
+      }
     })
 
     // -> Handle anchor scrolling
@@ -652,7 +687,9 @@ export default {
     }
 
     // -> Handle anchor links within the page contents
-    this.$nextTick(() => {
+    this.$nextTick(async () => {
+      await this.renderMermaidDiagrams()
+
       this.$refs.container.querySelectorAll(`a[href^="#"], a[href^="${window.location.href.replace(window.location.hash, '')}#"]`).forEach(el => {
         el.onclick = ev => {
           ev.preventDefault()
@@ -723,6 +760,26 @@ export default {
       this.$vuetify.goTo('#discussion', this.scrollOpts)
       if (focusNewComment) {
         document.querySelector('#discussion-new').focus()
+      }
+    },
+    async renderMermaidDiagrams () {
+      const elements = this.$refs.container.querySelectorAll('.mermaid, pre.codeblock-mermaid > code')
+      for (const elm of elements) {
+        mermaidId++
+        const mermaidDef = preprocessMermaidContent(elm.textContent)
+        try {
+          const { svg, bindFunctions } = await mermaid.render(`mermaid-page-${mermaidId}`, mermaidDef)
+          const mmElm = document.createElement('div')
+          mmElm.className = 'diagram mermaid-rendered'
+          mountMermaidSvg(mmElm, svg)
+          const target = elm.matches('code') ? elm.parentElement : elm
+          target.replaceWith(mmElm)
+          if (bindFunctions) {
+            bindFunctions(mmElm)
+          }
+        } catch (err) {
+          console.warn('Failed to render mermaid diagram:', err)
+        }
       }
     }
   }

@@ -358,6 +358,19 @@ function protectMathPipes (text) {
   return result
 }
 
+/**
+ * Preprocess mermaid diagram content before passing to mermaid.render().
+ * Restores PUA placeholders that may have been injected by protectMathPipes().
+ */
+function preprocessMermaidContent (text) {
+  // Restore PUA placeholders that may have been injected by protectMathPipes()
+  return text
+    .replaceAll('\uE000', '{')
+    .replaceAll('\uE001', '}')
+    .replaceAll(PIPE_PLACEHOLDER, '|')
+    .replaceAll(AMPERSAND_PLACEHOLDER, '&')
+}
+
 // Inject line numbers for preview scroll sync
 let linesMap = []
 function injectLineNumbers (tokens, idx, options, env, slf) {
@@ -649,14 +662,20 @@ export default {
         this.cm.refresh()
       })
     },
-    renderMermaidDiagrams () {
-      document.querySelectorAll('.editor-markdown-preview pre.codeblock-mermaid > code').forEach(elm => {
+    async renderMermaidDiagrams () {
+      const elements = document.querySelectorAll('.editor-markdown-preview pre.codeblock-mermaid > code')
+      for (const elm of elements) {
         mermaidId++
-        const mermaidDef = elm.innerText
-        const mmElm = document.createElement('div')
-        mmElm.innerHTML = `<div id="mermaid-id-${mermaidId}">${mermaid.render(`mermaid-id-${mermaidId}`, mermaidDef)}</div>`
-        elm.parentElement.replaceWith(mmElm)
-      })
+        const mermaidDef = preprocessMermaidContent(elm.textContent)
+        try {
+          const { svg } = await mermaid.render(`mermaid-id-${mermaidId}`, mermaidDef)
+          const mmElm = document.createElement('div')
+          mmElm.innerHTML = `<div id="mermaid-id-${mermaidId}">${svg}</div>`
+          elm.parentElement.replaceWith(mmElm)
+        } catch (err) {
+          console.warn('Failed to render mermaid diagram:', err)
+        }
+      }
     },
     autocomplete (cm, change) {
       if (cm.getModeAt(cm.getCursor()).name !== 'markdown') {
@@ -798,7 +817,13 @@ export default {
     // Initialize Mermaid API
     mermaid.initialize({
       startOnLoad: false,
-      theme: this.$vuetify.theme.dark ? `dark` : `default`
+      // Mermaid's strict SVG sanitizer strips XHTML children from foreignObject labels.
+      securityLevel: 'loose',
+      theme: this.$vuetify.theme.dark ? `dark` : `default`,
+      legacyMathML: true,
+      flowchart: {
+        htmlLabels: true
+      }
     })
 
     // Initialize CodeMirror
