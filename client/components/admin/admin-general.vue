@@ -264,6 +264,7 @@
 import _ from 'lodash'
 import { sync } from 'vuex-pathify'
 import gql from 'graphql-tag'
+import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
 
 import { ensureLegacyStoreModule } from '../../modules/store-legacy'
 import store from '../../store'
@@ -455,12 +456,17 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('editorInsert', opts => {
-      this.config.logoUrl = opts.path
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.INSERT, opts => {
+        this.config.logoUrl = opts.path
+      })
+    ]
   },
   beforeDestroy() {
-    this.$root.$off('editorInsert')
+    if (this.editorEventUnsubscribers) {
+      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.editorEventUnsubscribers = null
+    }
   },
   apollo: {
     config: {

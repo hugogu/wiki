@@ -222,6 +222,7 @@ import 'prismjs/plugins/autoloader/prism-autoloader'
 import 'prismjs/plugins/line-numbers/prism-line-numbers'
 import 'prismjs/plugins/normalize-whitespace/prism-normalize-whitespace'
 import { Base64 } from 'js-base64'
+import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
 
 // Mermaid
 import mermaid from 'mermaid'
@@ -925,41 +926,44 @@ export default {
     this.processContent(this.$store.get('editor/content'))
     this.refresh()
 
-    this.$root.$on('editorInsert', opts => {
-      switch (opts.kind) {
-        case 'IMAGE':
-          let img = `![${opts.text}](${opts.path})`
-          if (opts.align && opts.align !== '') {
-            img += `{.align-${opts.align}}`
-          }
-          this.insertAtCursor({
-            content: img
-          })
-          break
-        case 'BINARY':
-          this.insertAtCursor({
-            content: `[${opts.text}](${opts.path})`
-          })
-          break
-        case 'DIAGRAM':
-          const selStartLine = this.cm.getCursor('from').line
-          const selEndLine = this.cm.getCursor('to').line + 1
-          this.cm.doc.replaceSelection('```diagram\n' + opts.text + '\n```\n', 'start')
-          this.processMarkers(selStartLine, selEndLine)
-          break
-      }
-    })
-
-    // Handle save conflict
-    this.$root.$on('saveConflict', () => {
-      this.toggleModal(`editorModalConflict`)
-    })
-    this.$root.$on('overwriteEditorContent', () => {
-      this.cm.setValue(this.$store.get('editor/content'))
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.INSERT, opts => {
+        switch (opts.kind) {
+          case 'IMAGE':
+            let img = `![${opts.text}](${opts.path})`
+            if (opts.align && opts.align !== '') {
+              img += `{.align-${opts.align}}`
+            }
+            this.insertAtCursor({
+              content: img
+            })
+            break
+          case 'BINARY':
+            this.insertAtCursor({
+              content: `[${opts.text}](${opts.path})`
+            })
+            break
+          case 'DIAGRAM':
+            const selStartLine = this.cm.getCursor('from').line
+            const selEndLine = this.cm.getCursor('to').line + 1
+            this.cm.doc.replaceSelection('```diagram\n' + opts.text + '\n```\n', 'start')
+            this.processMarkers(selStartLine, selEndLine)
+            break
+        }
+      }),
+      onEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT, () => {
+        this.toggleModal(`editorModalConflict`)
+      }),
+      onEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT, () => {
+        this.cm.setValue(this.$store.get('editor/content'))
+      })
+    ]
   },
   beforeDestroy() {
-    this.$root.$off('editorInsert')
+    if (this.editorEventUnsubscribers) {
+      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.editorEventUnsubscribers = null
+    }
   }
 }
 </script>

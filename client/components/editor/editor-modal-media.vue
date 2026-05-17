@@ -233,6 +233,7 @@ import { get, sync } from 'vuex-pathify'
 import Cookies from 'js-cookie'
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
+import { EDITOR_EVENTS, emitEditorEvent } from '../../modules/editor-events'
 
 import listAssetQuery from 'gql/editor/editor-media-query-list.gql'
 import listFolderAssetQuery from 'gql/editor/editor-media-query-folder-list.gql'
@@ -347,7 +348,7 @@ export default {
     insert () {
       const asset = _.find(this.assets, ['id', this.currentFileId])
       const assetPath = this.folderTree.map(f => f.slug).join('/')
-      this.$root.$emit('editorInsert', {
+      emitEditorEvent(EDITOR_EVENTS.INSERT, {
         kind: asset.kind,
         path: this.currentFolderId > 0 ? `/${assetPath}/${asset.filename}` : `/${asset.filename}`,
         text: asset.filename,

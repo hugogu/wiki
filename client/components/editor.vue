@@ -63,6 +63,7 @@ import { AtomSpinner } from 'epic-spinners'
 import { Base64 } from 'js-base64'
 import { StatusIndicator } from 'vue-status-indicator'
 
+import { emitEditorEvent, EDITOR_EVENTS, onEditorEvent } from '../modules/editor-events'
 import { ensureLegacyStoreModule } from '../modules/store-legacy'
 import store from '../store'
 import editorStore from '../store/editor'
@@ -262,12 +263,20 @@ export default {
       }
     }
 
-    this.$root.$on('resetEditorConflict', () => {
-      this.isConflict = false
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.RESET_CONFLICT, () => {
+        this.isConflict = false
+      })
+    ]
 
     // this.$store.set('editor/mode', 'edit')
     // this.currentEditor = `editorApi`
+  },
+  beforeDestroy () {
+    if (this.editorEventUnsubscribers) {
+      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.editorEventUnsubscribers = null
+    }
   },
   methods: {
     openPropsModal(name) {
@@ -280,7 +289,7 @@ export default {
       this.dialogProgress = false
     },
     openConflict() {
-      this.$root.$emit('saveConflict')
+      emitEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT)
     },
     async save({ rethrow = false, overwrite = false } = {}) {
       this.showProgressDialog('saving')
@@ -395,7 +404,7 @@ export default {
             }
           })
           if (_.get(conflictResp, 'data.pages.checkConflicts', false)) {
-            this.$root.$emit('saveConflict')
+            emitEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT)
             throw new Error(this.$t('editor:conflict.warning'))
           }
 

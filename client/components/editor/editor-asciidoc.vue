@@ -130,6 +130,7 @@ import _ from 'lodash'
 import { Base64 } from 'js-base64'
 import { get, sync } from 'vuex-pathify'
 import DOMPurify from 'dompurify'
+import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
 
 // ========================================
 // IMPORTS
@@ -461,38 +462,41 @@ export default {
     // Render initial preview
     this.processContent(this.$store.get('editor/content'))
 
-    this.$root.$on('editorInsert', opts => {
-      switch (opts.kind) {
-        case 'IMAGE':
-          let img = `image::${opts.path}[${opts.text}]`
-          this.insertAtCursor({
-            content: img
-          })
-          break
-        case 'BINARY':
-          this.insertAtCursor({
-            content: `link:${opts.path}[${opts.text}]`
-          })
-          break
-        case 'DIAGRAM':
-          const selStartLine = this.cm.getCursor('from').line
-          const selEndLine = this.cm.getCursor('to').line + 1
-          this.cm.doc.replaceSelection('```diagram\n' + opts.text + '\n```\n', 'start')
-          this.processMarkers(selStartLine, selEndLine)
-          break
-      }
-    })
-
-    // Handle save conflict
-    this.$root.$on('saveConflict', () => {
-      this.toggleModal(`editorModalConflict`)
-    })
-    this.$root.$on('overwriteEditorContent', () => {
-      this.cm.setValue(this.$store.get('editor/content'))
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.INSERT, opts => {
+        switch (opts.kind) {
+          case 'IMAGE':
+            let img = `image::${opts.path}[${opts.text}]`
+            this.insertAtCursor({
+              content: img
+            })
+            break
+          case 'BINARY':
+            this.insertAtCursor({
+              content: `link:${opts.path}[${opts.text}]`
+            })
+            break
+          case 'DIAGRAM':
+            const selStartLine = this.cm.getCursor('from').line
+            const selEndLine = this.cm.getCursor('to').line + 1
+            this.cm.doc.replaceSelection('```diagram\n' + opts.text + '\n```\n', 'start')
+            this.processMarkers(selStartLine, selEndLine)
+            break
+        }
+      }),
+      onEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT, () => {
+        this.toggleModal(`editorModalConflict`)
+      }),
+      onEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT, () => {
+        this.cm.setValue(this.$store.get('editor/content'))
+      })
+    ]
   },
   beforeDestroy() {
-    this.$root.$off('editorInsert')
+    if (this.editorEventUnsubscribers) {
+      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.editorEventUnsubscribers = null
+    }
   }
 }
 </script>

@@ -21,6 +21,7 @@ import DecoupledEditor from '@requarks/ckeditor5'
 // import DecoupledEditor from '../../../../wiki-ckeditor5/build/ckeditor'
 import EditorConflict from './ckeditor/conflict.vue'
 import { html as beautify } from 'js-beautify/js/lib/beautifier.min.js'
+import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
 
 /* global siteLangs */
 
@@ -99,39 +100,42 @@ export default {
       this.$store.set('editor/content', beautify(this.editor.getData(), { indent_size: 2, end_with_newline: true }))
     }, 300))
 
-    this.$root.$on('editorInsert', opts => {
-      switch (opts.kind) {
-        case 'IMAGE':
-          this.editor.execute('imageInsert', {
-            source: opts.path
-          })
-          break
-        case 'BINARY':
-          this.editor.execute('link', opts.path, {
-            linkIsDownloadable: true
-          })
-          break
-        case 'DIAGRAM':
-          this.editor.execute('imageInsert', {
-            source: `data:image/svg+xml;base64,${opts.text}`
-          })
-          break
-      }
-    })
-
-    this.$root.$on('editorLinkToPage', opts => {
-      this.insertLink()
-    })
-
-    // Handle save conflict
-    this.$root.$on('saveConflict', () => {
-      this.isConflict = true
-    })
-    this.$root.$on('overwriteEditorContent', () => {
-      this.editor.setData(this.$store.get('editor/content'))
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.INSERT, opts => {
+        switch (opts.kind) {
+          case 'IMAGE':
+            this.editor.execute('imageInsert', {
+              source: opts.path
+            })
+            break
+          case 'BINARY':
+            this.editor.execute('link', opts.path, {
+              linkIsDownloadable: true
+            })
+            break
+          case 'DIAGRAM':
+            this.editor.execute('imageInsert', {
+              source: `data:image/svg+xml;base64,${opts.text}`
+            })
+            break
+        }
+      }),
+      onEditorEvent(EDITOR_EVENTS.LINK_TO_PAGE, () => {
+        this.insertLink()
+      }),
+      onEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT, () => {
+        this.isConflict = true
+      }),
+      onEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT, () => {
+        this.editor.setData(this.$store.get('editor/content'))
+      })
+    ]
   },
   beforeDestroy () {
+    if (this.editorEventUnsubscribers) {
+      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.editorEventUnsubscribers = null
+    }
     if (this.editor) {
       this.editor.destroy()
       this.editor = null
