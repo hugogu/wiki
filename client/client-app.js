@@ -94,8 +94,13 @@ const buildPageMountOptions = () => {
     return null
   }
 
-  const contentsTemplate = pageEl.querySelector('template[slot="contents"]')
-  const commentsTemplate = pageEl.querySelector('template[slot="comments"]')
+  const getPageSlotTemplate = (slotName) => {
+    return pageEl.querySelector(`template[data-page-slot="${slotName}"]`) ||
+      pageEl.querySelector(`template[slot="${slotName}"]`)
+  }
+
+  const contentsTemplate = getPageSlotTemplate('contents')
+  const commentsTemplate = getPageSlotTemplate('comments')
 
   const pageProps = {
     pageId: readNumberAttribute(pageEl, ':page-id'),
