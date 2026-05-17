@@ -63,7 +63,7 @@
             hide-default-footer
             @page-count="pageTotal = $event"
           )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               tr.is-clickable(:active='props.selected', @click='$router.push(`/pages/` + props.item.id)')
                 td.text-xs-right {{ props.item.id }}
                 td
@@ -74,7 +74,7 @@
                   span.ml-2.grey--text(:class='$vuetify.theme.dark ? `text--lighten-1` : `text--darken-2`') / {{ props.item.path }}
                 td {{ $formatMoment(props.item.createdAt, 'calendar') }}
                 td {{ $formatMoment(props.item.updatedAt, 'calendar') }}
-            template(slot='no-data')
+            template(v-slot:no-data)
               v-alert.ma-3(icon='mdi-alert', :value='true', outlined) No pages to display.
           .text-center.py-2.animated.fadeInDown(v-if='this.pageTotal > 1')
             v-pagination(v-model='pagination', :length='pageTotal')

@@ -1,7 +1,7 @@
 <template lang="pug">
   v-app.editor(:dark='$vuetify.theme.dark')
     nav-header(dense)
-      template(slot='mid')
+      template(v-slot:mid)
         v-text-field.editor-title-input(
           dark
           solo
@@ -12,7 +12,7 @@
           dense
           full-width
         )
-      template(slot='actions')
+      template(v-slot:actions)
         v-btn.mr-3.animated.fadeIn(color='amber', outlined, small, v-if='isConflict', @click='openConflict')
           .overline.amber--text.mr-3 Conflict
           status-indicator(intermediary, pulse)

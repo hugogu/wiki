@@ -152,7 +152,8 @@
                   counter='255'
                   loading
                   )
-                  password-strength(slot='progress', v-model='newPass')
+                  template(v-slot:progress)
+                    password-strength(v-model='newPass')
                 v-text-field(
                   ref='iptVerifyPass'
                   v-model='verifyPass'

@@ -45,7 +45,8 @@
                     loading
                     counter='255'
                     )
-                    password-strength(slot='progress', v-model='password')
+                    template(v-slot:progress)
+                      password-strength(v-model='password')
                   v-text-field.md2.mt-2(
                     solo
                     flat

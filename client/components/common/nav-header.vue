@@ -1,22 +1,23 @@
 <template lang='pug'>
   v-app-bar.nav-header(color='black', dark, app, :clipped-left='!$vuetify.rtl', :clipped-right='$vuetify.rtl', fixed, flat, :extended='searchIsShown && $vuetify.breakpoint.smAndDown')
-    v-toolbar(color='deep-purple', flat, slot='extension', v-if='searchIsShown && $vuetify.breakpoint.smAndDown')
-      v-text-field(
-        ref='searchFieldMobile'
-        v-model='search'
-        clearable
-        background-color='deep-purple'
-        color='white'
-        :label='$t(`common:header.search`)'
-        single-line
-        solo
-        flat
-        hide-details
-        prepend-inner-icon='mdi-magnify'
-        :loading='searchIsLoading'
-        @keyup.enter='searchEnter'
-        autocomplete='off'
-      )
+    template(v-if='searchIsShown && $vuetify.breakpoint.smAndDown', v-slot:extension)
+      v-toolbar(color='deep-purple', flat)
+        v-text-field(
+          ref='searchFieldMobile'
+          v-model='search'
+          clearable
+          background-color='deep-purple'
+          color='white'
+          :label='$t(`common:header.search`)'
+          single-line
+          solo
+          flat
+          hide-details
+          prepend-inner-icon='mdi-magnify'
+          :loading='searchIsLoading'
+          @keyup.enter='searchEnter'
+          autocomplete='off'
+        )
     v-layout(row)
       v-flex(xs5, md4)
         v-toolbar.nav-header-inner(color='black', dark, flat, :class='$vuetify.rtl ? `pr-3` : `pl-3`')

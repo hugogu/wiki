@@ -27,7 +27,7 @@
                     persistent-hint
                     :hint='$t(`admin:theme.siteThemeHint`)'
                     )
-                    template(slot='item', slot-scope='data')
+                    template(v-slot:item='data')
                       v-list-item-avatar
                         v-icon.blue--text(dark) mdi-image-filter-frames
                       v-list-item-content
