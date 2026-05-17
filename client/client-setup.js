@@ -2,6 +2,7 @@
 import Vue from 'vue'
 import 'vuetify/dist/vuetify.min.css'
 import boot from './modules/boot'
+import { createLegacySetupAppOptions } from './modules/app-options-legacy'
 import { createLegacyVuetify, installLegacySetupPlugins, registerLegacySetupComponents } from './modules/vue-legacy-app'
 import { mountLegacyVueApp } from './modules/vue-legacy-instance'
 import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
@@ -14,10 +15,9 @@ installLegacySetupPlugins(Vue)
 registerLegacySetupComponents(Vue)
 
 let bootstrap = () => {
-  setWikiInstance(mountLegacyVueApp({
-    el: '#root',
+  setWikiInstance(mountLegacyVueApp(createLegacySetupAppOptions({
     vuetify: createLegacyVuetify()
-  }))
+  })))
 }
 
 window.boot.onDOMReady(bootstrap)

@@ -30,6 +30,7 @@ import {
   installLegacyPlugins,
   registerLegacyAppComponents
 } from './modules/vue-legacy-app'
+import { createLegacyClientAppOptions } from './modules/app-options-legacy'
 import { mountLegacyVueApp } from './modules/vue-legacy-instance'
 import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 
@@ -277,23 +278,21 @@ let bootstrap = () => {
   }
 
   const pageMountOptions = buildPageMountOptions()
+  const vuetify = createLegacyVuetify({
+    rtl: siteConfig.rtl,
+    dark: darkModeEnabled
+  })
 
-  setWikiInstance(mountLegacyVueApp({
-    el: '#root',
-    components: {},
-    mixins: [helpers],
+  setWikiInstance(mountLegacyVueApp(createLegacyClientAppOptions({
     apolloProvider,
-    store,
+    applyLegacyMomentPreferences,
+    helpers,
     i18n,
-    vuetify: createLegacyVuetify({
-      rtl: siteConfig.rtl,
-      dark: darkModeEnabled
-    }),
-    mounted () {
-      applyLegacyMomentPreferences(this, store, siteConfig)
-    },
-    ...(pageMountOptions || {})
-  }))
+    pageMountOptions,
+    siteConfig,
+    store,
+    vuetify
+  })))
 
   // ----------------------------------
   // Dispatch boot ready
