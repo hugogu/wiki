@@ -75,8 +75,8 @@
                     td.text-xs-center(v-if='$vuetify.breakpoint.lgAndUp')
                       v-chip.ma-0(x-small, :color='$vuetify.theme.dark ? `grey darken-4` : `grey lighten-4`')
                         .overline {{props.item.ext.toUpperCase().substring(1)}}
-                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ props.item.fileSize | prettyBytes }}
-                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ props.item.createdAt | moment('from') }}
+                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ $helpers.prettyBytes(props.item.fileSize) }}
+                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ $formatMoment(props.item.createdAt, 'from') }}
                     td(v-if='$vuetify.breakpoint.smAndUp')
                       v-menu(offset-x, min-width='200')
                         template(v-slot:activator='{ on }')
@@ -333,30 +333,6 @@ export default {
           this.$refs.folderNameIpt.focus()
         })
       }
-    }
-  },
-  filters: {
-    prettyBytes(num) {
-      if (typeof num !== 'number' || isNaN(num)) {
-        throw new TypeError('Expected a number')
-      }
-
-      let exponent
-      let unit
-      let neg = num < 0
-      let units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-      if (neg) {
-        num = -num
-      }
-      if (num < 1) {
-        return (neg ? '-' : '') + num + ' B'
-      }
-      exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1)
-      num = (num / Math.pow(1000, exponent)).toFixed(2) * 1
-      unit = units[exponent]
-
-      return (neg ? '-' : '') + num + ' ' + unit
     }
   },
   methods: {

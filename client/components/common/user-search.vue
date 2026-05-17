@@ -32,7 +32,7 @@
           template(v-for='(usr, idx) in items')
             v-list-item(:key='usr.id', @click='setUser(usr)')
               v-list-item-avatar(size='40', color='primary')
-                span.body-1.white--text {{usr.name | initials}}
+                span.body-1.white--text {{ $helpers.initials(usr.name) }}
               v-list-item-content
                 v-list-item-title.body-2 {{usr.name}}
                 v-list-item-subtitle {{usr.email}}
@@ -53,11 +53,6 @@ import _ from 'lodash'
 import gql from 'graphql-tag'
 
 export default {
-  filters: {
-    initials(val) {
-      return val.split(' ').map(v => v.substring(0, 1)).join('')
-    }
-  },
   props: {
     multiple: {
       type: Boolean,
