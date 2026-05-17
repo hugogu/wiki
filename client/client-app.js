@@ -30,6 +30,7 @@ import {
   installLegacyPlugins,
   registerLegacyAppComponents
 } from './modules/vue-legacy-app'
+import { mountLegacyVueApp } from './modules/vue-legacy-instance'
 
 // ====================================
 // Load Helpers
@@ -276,7 +277,7 @@ let bootstrap = () => {
 
   const pageMountOptions = buildPageMountOptions()
 
-  window.WIKI = new Vue({
+  window.WIKI = mountLegacyVueApp({
     el: '#root',
     components: {},
     mixins: [helpers],

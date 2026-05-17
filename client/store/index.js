@@ -1,7 +1,4 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createLegacyStore } from './legacy-store'
 import { createRootStoreOptions } from './root-options'
 
-Vue.use(Vuex)
-
-export default new Vuex.Store(createRootStoreOptions())
+export default createLegacyStore(createRootStoreOptions())
