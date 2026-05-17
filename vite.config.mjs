@@ -47,7 +47,8 @@ export default defineConfig(({ mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: '@import "@/scss/resources.scss";'
+          additionalData: '@use "@/scss/resources.scss" as *;',
+          quietDeps: true
         }
       }
     },

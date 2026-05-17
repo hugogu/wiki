@@ -1,5 +1,7 @@
+@use "../resources.scss" as *;
+
 .cm-s-wikijs-dark.CodeMirror {
-  background: darken(mc('grey','900'), 3%);
+  background: shade(mc('grey','900'), 3%);
   color: #e0e0e0;
 }
 .cm-s-wikijs-dark div.CodeMirror-selected {
@@ -15,7 +17,7 @@
   background: mc('amber', '500');
 }
 .cm-s-wikijs-dark .CodeMirror-gutters {
-  background: darken(mc('grey','900'), 6%);
+  background: shade(mc('grey','900'), 6%);
   border-right: 1px solid mc('grey','900');
 }
 .cm-s-wikijs-dark .CodeMirror-guttermarker {
@@ -81,7 +83,7 @@
 .cm-s-wikijs-dark .CodeMirror-foldmarker {
   margin-left: 10px;
   display: inline-block;
-  background-color: rgba(mc('amber', '800'), .3);
+  background-color: alpha-color(mc('amber', '800'), .3);
   padding: 8px 5px;
   color: mc('amber', '500');
   border-radius: 5px;
@@ -90,7 +92,7 @@
 
 .cm-s-wikijs-dark .CodeMirror-buttonmarker {
   display: inline-block;
-  background-color: rgba(mc('blue', '500'), .3);
+  background-color: alpha-color(mc('blue', '500'), .3);
   border: 1px solid mc('blue', '800');
   padding: 1px 10px;
   color: mc('blue', '200') !important;

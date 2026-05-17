@@ -1,3 +1,5 @@
+@use "../resources.scss" as *;
+
 .onboarding {
   background: linear-gradient(to bottom, mc('grey', '900') 0%, mc('grey', '700') 100%);
   height: 100%;

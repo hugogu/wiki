@@ -431,14 +431,14 @@ export default {
 
   &-title {
     background-color: mc('grey', '900');
-    border-bottom: 1px solid lighten(mc('grey', '900'), 10%);
+    border-bottom: 1px solid tint(mc('grey', '900'), 10%);
     color: #FFF;
     padding: 10px;
   }
 
   &-hint {
     background-color: mc('grey', '900');
-    border-top: 1px solid lighten(mc('grey', '900'), 5%);
+    border-top: 1px solid tint(mc('grey', '900'), 5%);
     color: mc('grey', '500');
     padding: 5px 10px;
   }

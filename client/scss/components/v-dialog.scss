@@ -1,3 +1,5 @@
+@use "../resources.scss" as *;
+
 .dialog-header {
   background-color: mc('blue', '700');
   background-image: radial-gradient(ellipse at top, mc('blue', '500'), mc('blue', '700')),

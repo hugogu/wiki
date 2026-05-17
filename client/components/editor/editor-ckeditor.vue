@@ -229,7 +229,7 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
 
     &.ck.ck-editor__editable:not(.ck-editor__nested-editable).ck-focused {
       border-color: #FFF;
-      box-shadow: 0 0 10px rgba(mc('blue', '700'), .25);
+      box-shadow: 0 0 10px alpha-color(mc('blue', '700'), .25);
 
       @at-root .theme--dark & {
         border-color: #444;

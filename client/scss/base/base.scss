@@ -1,3 +1,6 @@
+@use "sass:math";
+@use "../resources.scss" as *;
+
 html {
   box-sizing: border-box;
   height: 100%;
@@ -51,29 +54,31 @@ html {
   }
 
   @for $i from 1 through 5 {
+    $step: math.percentage(math.div($i, 100));
+
     .grey.darken-2-d#{$i} {
-      background-color: darken(mc('grey', '700'), percentage($i/100)) !important;
-      border-color: darken(mc('grey', '700'), percentage($i/100)) !important;
+      background-color: shade(mc('grey', '700'), $step) !important;
+      border-color: shade(mc('grey', '700'), $step) !important;
     }
     .grey.darken-2-l#{$i} {
-      background-color: lighten(mc('grey', '700'), percentage($i/100)) !important;
-      border-color: lighten(mc('grey', '700'), percentage($i/100)) !important;
+      background-color: tint(mc('grey', '700'), $step) !important;
+      border-color: tint(mc('grey', '700'), $step) !important;
     }
     .grey.darken-3-d#{$i} {
-      background-color: darken(mc('grey', '800'), percentage($i/100)) !important;
-      border-color: darken(mc('grey', '800'), percentage($i/100)) !important;
+      background-color: shade(mc('grey', '800'), $step) !important;
+      border-color: shade(mc('grey', '800'), $step) !important;
     }
     .grey.darken-3-l#{$i} {
-      background-color: lighten(mc('grey', '800'), percentage($i/100)) !important;
-      border-color: lighten(mc('grey', '800'), percentage($i/100)) !important;
+      background-color: tint(mc('grey', '800'), $step) !important;
+      border-color: tint(mc('grey', '800'), $step) !important;
     }
     .grey.darken-4-d#{$i} {
-      background-color: darken(mc('grey', '900'), percentage($i/100)) !important;
-      border-color: darken(mc('grey', '900'), percentage($i/100)) !important;
+      background-color: shade(mc('grey', '900'), $step) !important;
+      border-color: shade(mc('grey', '900'), $step) !important;
     }
     .grey.darken-4-l#{$i} {
-      background-color: lighten(mc('grey', '900'), percentage($i/100)) !important;
-      border-color: lighten(mc('grey', '900'), percentage($i/100)) !important;
+      background-color: tint(mc('grey', '900'), $step) !important;
+      border-color: tint(mc('grey', '900'), $step) !important;
     }
   }
   .grey.darken-5 {
@@ -82,11 +87,11 @@ html {
   }
 
   .blue.darken-5 {
-    background-color: darken(mc('blue', '900'), 20%) !important;
-    border-color: darken(mc('blue', '900'), 20%) !important;
+    background-color: shade(mc('blue', '900'), 20%) !important;
+    border-color: shade(mc('blue', '900'), 20%) !important;
   }
   .indigo.darken-5 {
-    background-color: darken(mc('indigo', '900'), 10%) !important;
-    border-color: darken(mc('indigo', '900'), 10%) !important;
+    background-color: shade(mc('indigo', '900'), 10%) !important;
+    border-color: shade(mc('indigo', '900'), 10%) !important;
   }
 }

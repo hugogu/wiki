@@ -1,5 +1,7 @@
+@use "../resources.scss" as *;
+
 .unauthorized {
-  background: linear-gradient(to bottom, darken(mc('blue', '900'), 10%) 0%, mc('red', '500') 100%);
+  background: linear-gradient(to bottom, shade(mc('blue', '900'), 10%) 0%, mc('red', '500') 100%);
   height: 100%;
   display: flex;
   flex-direction: column;

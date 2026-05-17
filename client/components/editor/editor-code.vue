@@ -271,7 +271,7 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
   }
 
   &-editor {
-    background-color: darken(mc('grey', '900'), 4.5%);
+    background-color: shade(mc('grey', '900'), 4.5%);
     flex: 1 1 50%;
     display: block;
     height: $editor-height;
@@ -369,7 +369,7 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
   }
 
   .cm-s-wikijs-dark.CodeMirror {
-    background: darken(mc('grey','900'), 3%);
+    background: shade(mc('grey','900'), 3%);
     color: #e0e0e0;
   }
   .cm-s-wikijs-dark div.CodeMirror-selected {
@@ -385,7 +385,7 @@ $editor-height-mobile: calc(100vh - 56px - 16px);
     background: mc('amber', '500');
   }
   .cm-s-wikijs-dark .CodeMirror-gutters {
-    background: darken(mc('grey','900'), 6%);
+    background: shade(mc('grey','900'), 6%);
     border-right: 1px solid mc('grey','900');
   }
   .cm-s-wikijs-dark .CodeMirror-guttermarker {

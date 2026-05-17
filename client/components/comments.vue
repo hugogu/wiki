@@ -532,7 +532,7 @@ export default {
     }
 
     code {
-      background-color: rgba(mc('pink', '500'), .1);
+      background-color: alpha-color(mc('pink', '500'), .1);
       box-shadow: none;
     }
 

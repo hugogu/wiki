@@ -508,7 +508,7 @@ $editor-ascii-height-mobile: calc(100vh - 112px - 16px);
   }
 
   &-editor {
-    background-color: darken(mc('grey', '900'), 4.5%);
+    background-color: shade(mc('grey', '900'), 4.5%);
     flex: 1 1 50%;
     display: block;
     height: $editor-ascii-height;
@@ -605,7 +605,7 @@ $editor-ascii-height-mobile: calc(100vh - 112px - 16px);
           overflow: hidden;
 
           @at-root .theme--dark & {
-            background-color: rgba(mc('teal', '500'), .1);
+            background-color: alpha-color(mc('teal', '500'), .1);
           }
         }
       }

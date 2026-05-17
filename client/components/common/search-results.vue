@@ -169,6 +169,8 @@ export default {
 </script>
 
 <style lang="scss">
+@use "sass:map";
+
 .search-results {
   position: fixed;
   top: 64px;
@@ -181,7 +183,7 @@ export default {
   text-align: center;
   animation: searchResultsReveal .6s ease;
 
-  @media #{map-get($display-breakpoints, 'sm-and-down')} {
+  @media #{map.get($display-breakpoints, 'sm-and-down')} {
     top: 112px;
   }
 
@@ -227,7 +229,7 @@ export default {
       background: #FFF linear-gradient(to bottom, #FFF, mc('orange', '100'));
 
       @at-root .theme--dark & {
-        background: mc('grey', '900') linear-gradient(to bottom, mc('orange', '900'), darken(mc('orange', '900'), 15%));
+        background: mc('grey', '900') linear-gradient(to bottom, mc('orange', '900'), shade(mc('orange', '900'), 15%));
       }
     }
   }

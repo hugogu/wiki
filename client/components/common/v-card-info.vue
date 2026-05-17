@@ -49,7 +49,7 @@ export default {
     border-bottom-color: mc('blue', '100');
 
     @at-root .theme--dark & {
-      border-bottom-color: rgba(mc('blue', '100'), .3);
+      border-bottom-color: alpha-color(mc('blue', '100'), .3);
     }
   }
 
@@ -57,7 +57,7 @@ export default {
     border-bottom-color: mc('red', '100');
 
     @at-root .theme--dark & {
-      border-bottom-color: rgba(mc('red', '100'), .3);
+      border-bottom-color: alpha-color(mc('red', '100'), .3);
     }
   }
 }

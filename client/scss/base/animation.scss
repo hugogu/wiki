@@ -1,8 +1,8 @@
-$use-fade: true;
-$use-zoom: true;
-$use-bounce: true;
-
-@import "animate-sass/animate";
+@use "animate-sass/animate" with (
+  $use-fade: true,
+  $use-zoom: true,
+  $use-bounce: true
+);
 
 
 @for $i from 1 to 12 {

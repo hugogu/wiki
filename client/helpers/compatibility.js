@@ -1,6 +1,4 @@
 // =======================================
-// Fetch polyfill
+// Browser compatibility shims
 // =======================================
-// Requirement: Safari 9 and below, IE 11 and below
-
-import 'whatwg-fetch'
+// Modern browser targets ship fetch natively, so we no longer load a polyfill here.

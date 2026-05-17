@@ -1,6 +1,8 @@
-@import "global";
+@use "sass:map";
+@use "sass:meta";
+@use "global" as *;
 
-@import "./base/icons.scss";
+@use "./base/icons.scss";
 @import 'katex/dist/katex.min.css';
 @import '@mdi/font/css/materialdesignicons.css';
 
@@ -167,7 +169,7 @@ body {
 
       @each $colorName, $color in $material-colors {
         &.#{$colorName} {
-          background-color: map-get($color, '500');
+          background-color: map.get($color, '500');
         }
       }
     }
@@ -368,7 +370,7 @@ body {
   }
 }
 
-@import "../themes/default/scss/app.scss";
+@include meta.load-css("../themes/default/scss/app.scss");
 
 .contents {
   flex-grow: 1;

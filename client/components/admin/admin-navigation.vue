@@ -519,7 +519,7 @@ export default {
   cursor: pointer;
 
   &:hover {
-    background-color: rgba(mc('blue', '500'), .25);
+    background-color: alpha-color(mc('blue', '500'), .25);
   }
 }
 

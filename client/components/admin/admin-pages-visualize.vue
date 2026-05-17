@@ -178,7 +178,7 @@ export default {
         .clone(true).lower()
         .attr('stroke', this.$vuetify.theme.dark ? '#222' : 'white')
 
-      function overed(d) {
+      function overed(event, d) {
         link.style('mix-blend-mode', null)
         d3.select(this).attr('font-weight', 'bold')
         d3.selectAll(d.incoming.map(d => d.path)).attr('stroke', '#2196F3').raise()
@@ -187,7 +187,7 @@ export default {
         d3.selectAll(d.outgoing.map(([, d]) => d.text)).attr('fill', '#E91E63').attr('font-weight', 'bold')
       }
 
-      function outed(d) {
+      function outed(event, d) {
         link.style('mix-blend-mode', 'multiply')
         d3.select(this).attr('font-weight', null)
         d3.selectAll(d.incoming.map(d => d.path)).attr('stroke', null)

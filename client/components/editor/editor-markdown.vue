@@ -371,6 +371,14 @@ function preprocessMermaidContent (text) {
     .replaceAll(AMPERSAND_PLACEHOLDER, '&')
 }
 
+async function waitForDocumentFonts () {
+  if (document.fonts && document.fonts.ready) {
+    try {
+      await document.fonts.ready
+    } catch (err) {}
+  }
+}
+
 // Inject line numbers for preview scroll sync
 let linesMap = []
 function injectLineNumbers (tokens, idx, options, env, slf) {
@@ -663,15 +671,18 @@ export default {
       })
     },
     async renderMermaidDiagrams () {
-      const elements = document.querySelectorAll('.editor-markdown-preview pre.codeblock-mermaid > code')
+      await waitForDocumentFonts()
+      const elements = this.$refs.editorPreview.querySelectorAll('pre.codeblock-mermaid > code')
       for (const elm of elements) {
         mermaidId++
         const mermaidDef = preprocessMermaidContent(elm.textContent)
         try {
-          const { svg } = await mermaid.render(`mermaid-id-${mermaidId}`, mermaidDef)
+          const { svg, bindFunctions } = await mermaid.render(`mermaid-id-${mermaidId}`, mermaidDef)
           const mmElm = document.createElement('div')
+          mmElm.className = 'diagram mermaid-rendered'
           mmElm.innerHTML = `<div id="mermaid-id-${mermaidId}">${svg}</div>`
           elm.parentElement.replaceWith(mmElm)
+          bindFunctions?.(mmElm)
         } catch (err) {
           console.warn('Failed to render mermaid diagram:', err)
         }
@@ -820,7 +831,10 @@ export default {
       // Mermaid's strict SVG sanitizer strips XHTML children from foreignObject labels.
       securityLevel: 'loose',
       theme: this.$vuetify.theme.dark ? `dark` : `default`,
+      htmlLabels: true,
+      fontFamily: 'Roboto, "Helvetica Neue", Arial, sans-serif',
       legacyMathML: true,
+      forceLegacyMathML: true,
       flowchart: {
         htmlLabels: true
       }
@@ -962,7 +976,7 @@ $editor-height-mobile: calc(100vh - 112px - 16px);
   }
 
   &-editor {
-    background-color: darken(mc('grey', '900'), 4.5%);
+    background-color: shade(mc('grey', '900'), 4.5%);
     flex: 1 1 50%;
     display: block;
     height: $editor-height;
@@ -1059,7 +1073,7 @@ $editor-height-mobile: calc(100vh - 112px - 16px);
           overflow: hidden;
 
           @at-root .theme--dark & {
-            background-color: rgba(mc('teal', '500'), .1);
+            background-color: alpha-color(mc('teal', '500'), .1);
           }
         }
       }

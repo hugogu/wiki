@@ -245,7 +245,7 @@ export default {
 
 .admin {
   &.theme--light .application--wrap {
-    background-color: lighten(mc('grey', '200'), 2%);
+    background-color: tint(mc('grey', '200'), 2%);
   }
 }
 
@@ -264,7 +264,7 @@ export default {
 
 .admin-sidebar {
   .v-list__tile--active {
-    background-color: rgba(mc('theme', 'primary'), .1);
+    background-color: alpha-color(mc('theme', 'primary'), .1);
 
     .v-icon {
       color: mc('theme', 'primary');

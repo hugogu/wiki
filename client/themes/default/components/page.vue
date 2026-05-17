@@ -413,6 +413,14 @@ function preprocessMermaidContent (text) {
     .replaceAll(AMPERSAND_PH, '&')
 }
 
+async function waitForDocumentFonts () {
+  if (document.fonts && document.fonts.ready) {
+    try {
+      await document.fonts.ready
+    } catch (err) {}
+  }
+}
+
 Prism.plugins.autoloader.languages_path = '/_assets/js/prism/'
 Prism.plugins.NormalizeWhitespace.setDefaults({
   'remove-trailing': true,
@@ -667,7 +675,10 @@ export default {
       // Mermaid's strict SVG sanitizer strips XHTML children from foreignObject labels.
       securityLevel: 'loose',
       theme: this.$vuetify.theme.dark ? `dark` : `default`,
+      htmlLabels: true,
+      fontFamily: 'Roboto, "Helvetica Neue", Arial, sans-serif',
       legacyMathML: true,
+      forceLegacyMathML: true,
       flowchart: {
         htmlLabels: true
       }
@@ -763,6 +774,7 @@ export default {
       }
     },
     async renderMermaidDiagrams () {
+      await waitForDocumentFonts()
       const elements = this.$refs.container.querySelectorAll('.mermaid, pre.codeblock-mermaid > code')
       for (const elm of elements) {
         mermaidId++
