@@ -50,7 +50,7 @@
             @page-count='pageCount = $event'
             hide-default-footer
             )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               tr.is-clickable(:active='props.selected', @click='$router.push("/users/" + props.item.id)')
                 //- td
                   v-checkbox(hide-details, :input-value='props.selected', color='blue darken-2', @click='props.selected = !props.selected')
@@ -66,7 +66,7 @@
                   v-icon.mr-3(v-if='props.item.isSystem') mdi-lock-outline
                   status-indicator(positive, pulse, v-if='props.item.isActive')
                   status-indicator(negative, pulse, v-else)
-            template(slot='no-data')
+            template(v-slot:no-data)
               .pa-3
                 v-alert.text-left(icon='mdi-alert', outlined, color='grey')
                   em.body-2 No users to display!

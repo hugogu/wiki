@@ -1,7 +1,7 @@
 <template lang='pug'>
   v-app.admin
     nav-header(hide-search)
-      template(slot='mid')
+      template(v-slot:mid)
         v-spacer
         .overline.grey--text {{$t('admin:adminArea')}}
         v-spacer
@@ -100,9 +100,10 @@
               no-action
               v-if='hasPermission([`manage:system`, `manage:api`])'
               )
-              v-list-item(slot='activator')
-                v-list-item-avatar(size='24', tile): v-icon mdi-dev-to
-                v-list-item-title {{ $t('admin:dev.title') }}
+              template(v-slot:activator)
+                v-list-item
+                  v-list-item-avatar(size='24', tile): v-icon mdi-dev-to
+                  v-list-item-title {{ $t('admin:dev.title') }}
 
               v-list-item(to='/dev-flags', color='primary')
                 v-list-item-title {{ $t('admin:dev.flags.title') }}

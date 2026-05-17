@@ -40,7 +40,7 @@
             :items='breadcrumbs'
             divider='/'
             )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               v-icon(v-if='props.item.path === "/"', small, @click='goHome') mdi-home
               v-btn.ma-0(v-else, :href='props.item.path', small, text) {{props.item.name}}
           template(v-if='!isPublished')

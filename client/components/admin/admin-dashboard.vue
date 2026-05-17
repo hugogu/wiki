@@ -65,7 +65,7 @@
             hide-default-footer
             hide-default-header
             )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               tr.is-clickable(:active='props.selected', @click='$router.push(`/pages/` + props.item.id)')
                 td
                   .body-2: strong {{ props.item.title }}
@@ -86,7 +86,7 @@
             hide-default-footer
             hide-default-header
             )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               tr.is-clickable(:active='props.selected', @click='$router.push(`/users/` + props.item.id)')
                 td
                   .body-2: strong {{ props.item.name }}

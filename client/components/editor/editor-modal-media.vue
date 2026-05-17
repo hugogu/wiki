@@ -62,7 +62,7 @@
                 hide-default-footer,
                 dense
               )
-                template(slot='item', slot-scope='props')
+                template(v-slot:item='props')
                   tr.is-clickable(
                     @click.left='currentFileId = props.item.id'
                     @click.right.prevent=''
@@ -112,7 +112,7 @@
                             v-list-item-avatar(size='24')
                               v-icon(color='red') mdi-file-hidden
                             v-list-item-content {{$t('common:actions.delete')}}
-                template(slot='no-data')
+                template(v-slot:no-data)
                   v-alert.mt-3.radius-7(icon='mdi-folder-open-outline', :value='true', outlined, color='teal') {{$t('editor:assets.folderEmpty')}}
               .text-xs-center.py-2(v-if='this.pageTotal > 1')
                 v-pagination(v-model='pagination', :length='pageTotal', color='teal')
