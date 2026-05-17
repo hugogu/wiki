@@ -1,8 +1,5 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-
-Vue.use(Vuex)
+import { createLegacyStoreInstance } from '../modules/vue-legacy-runtime'
 
 export function createLegacyStore (options) {
-  return new Vuex.Store(options)
+  return createLegacyStoreInstance(options)
 }

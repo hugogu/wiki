@@ -1,19 +1,5 @@
-import VueRouter from 'vue-router'
+import { createLegacyRouterInstance } from './vue-legacy-runtime'
 
-export function createLegacyRouter ({ base, routes = [], beforeEach, afterEach }) {
-  const router = new VueRouter({
-    mode: 'history',
-    base,
-    routes
-  })
-
-  if (beforeEach) {
-    router.beforeEach(beforeEach)
-  }
-
-  if (afterEach) {
-    router.afterEach(afterEach)
-  }
-
-  return router
+export function createLegacyRouter (options) {
+  return createLegacyRouterInstance(options)
 }

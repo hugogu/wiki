@@ -3,7 +3,6 @@ import VueClipboards from 'vue-clipboards'
 import Vuetify from 'vuetify'
 import VueMoment from 'vue-moment'
 import Vuescroll from 'vuescroll/dist/vuescroll-native'
-import VueRouter from 'vue-router'
 import {
   applyGlobalPlugins,
   assignGlobalProperties,
@@ -16,7 +15,6 @@ export function installLegacyPlugins (Vue, { localization, helpers, moment, velo
   Vue.config.productionTip = false
 
   applyGlobalPlugins(Vue, [
-    VueRouter,
     VueApollo,
     VueClipboards,
     localization.VueI18Next,

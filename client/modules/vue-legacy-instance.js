@@ -1,5 +1,5 @@
-import Vue from 'vue'
+import { mountLegacyVueInstance } from './vue-legacy-runtime'
 
 export function mountLegacyVueApp (options) {
-  return new Vue(options)
+  return mountLegacyVueInstance(options)
 }
