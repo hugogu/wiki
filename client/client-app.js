@@ -1,5 +1,6 @@
 /* global siteConfig */
 
+import './modules/vue-compat'
 import VueClipboards from 'vue-clipboards'
 import { ApolloClient } from 'apollo-client'
 import { BatchHttpLink } from 'apollo-link-batch-http'

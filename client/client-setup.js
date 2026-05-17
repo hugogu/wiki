@@ -1,4 +1,5 @@
 /* eslint-disable import/first */
+import './modules/vue-compat'
 import 'vuetify/dist/vuetify.min.css'
 import boot from './modules/boot'
 import { createLegacySetupAppOptions } from './modules/app-options-legacy'

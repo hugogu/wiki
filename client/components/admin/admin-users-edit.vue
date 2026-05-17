@@ -194,8 +194,8 @@
             v-icon.mr-2 mdi-account-group
             span {{$t('admin:users.groups')}}
           v-list(dense)
-            template(v-for='(group, idx) in user.groups')
-              v-list-item(:key='`group-` + group.id')
+            template(v-for='(group, idx) in user.groups', :key='`group-` + group.id')
+              v-list-item
                 v-list-item-avatar(size='32')
                   v-icon mdi-account-group-outline
                 v-list-item-content

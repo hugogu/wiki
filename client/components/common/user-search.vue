@@ -29,8 +29,8 @@
           two-line
           dense
           )
-          template(v-for='(usr, idx) in items')
-            v-list-item(:key='usr.id', @click='setUser(usr)')
+          template(v-for='(usr, idx) in items', :key='usr.id')
+            v-list-item(@click='setUser(usr)')
               v-list-item-avatar(size='40', color='primary')
                 span.body-1.white--text {{ $helpers.initials(usr.name) }}
               v-list-item-content

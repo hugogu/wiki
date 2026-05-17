@@ -39,8 +39,8 @@
                 template(v-if='folderTree.length > 0')
                   .body-2
                     span.mr-1 /
-                    template(v-for='folder of folderTree')
-                      span(:key='folder.id') {{folder.name}}
+                    template(v-for='folder of folderTree', :key='folder.id')
+                      span {{folder.name}}
                       span.mx-1 /
                 .body-2(v-else) / #[em root]
               template(v-if='folders.length > 0 || currentFolderId > 0')

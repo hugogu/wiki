@@ -58,8 +58,8 @@
                   v-model='currentPage'
                   color='primary'
                   )
-                  template(v-for='(page, idx) of currentPages')
-                    v-list-item(:key='`page-` + page.id', :value='page')
+                  template(v-for='(page, idx) of currentPages', :key='`page-` + page.id')
+                    v-list-item(:value='page')
                       v-list-item-icon: v-icon mdi-text-box
                       v-list-item-title {{page.title}}
                     v-divider(v-if='idx < pages.length - 1')
