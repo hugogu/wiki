@@ -1,37 +1,60 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Vuex from 'vuex'
+import * as VueModule from 'vue'
+import * as VueRouterModule from 'vue-router'
+import * as VuexModule from 'vuex'
+
+const resolveLegacyVueConstructor = (module) => module.default || module
+const resolveLegacyRouterConstructor = (module) => module.default || module.VueRouter || null
+const resolveLegacyStoreConstructor = (module) => module.default || module.Vuex || null
+
+const DefaultVueConstructor = resolveLegacyVueConstructor(VueModule)
+const DefaultVueRouterConstructor = resolveLegacyRouterConstructor(VueRouterModule)
+const DefaultVuexConstructor = resolveLegacyStoreConstructor(VuexModule)
 
 export function createLegacyVueRuntime ({
-  VueConstructor = Vue,
-  VueRouterConstructor = VueRouter,
-  VuexConstructor = Vuex
+  VueConstructor = DefaultVueConstructor,
+  VueRouterConstructor = DefaultVueRouterConstructor,
+  VuexConstructor = DefaultVuexConstructor,
+  createApp = null,
+  createRouter = null,
+  createWebHistory = null,
+  createStore = null
 } = {}) {
   let isLegacyRouterInstalled = false
   let isLegacyStoreInstalled = false
+  const hasModernRouterApi = typeof createRouter === 'function' && typeof createWebHistory === 'function'
+  const hasModernStoreApi = typeof createStore === 'function'
+  const hasModernAppApi = typeof createApp === 'function'
 
   const ensureLegacyRouterInstalled = () => {
-    if (!isLegacyRouterInstalled) {
+    if (!hasModernRouterApi && !isLegacyRouterInstalled && typeof VueConstructor?.use === 'function' && VueRouterConstructor) {
       VueConstructor.use(VueRouterConstructor)
       isLegacyRouterInstalled = true
     }
   }
 
   const ensureLegacyStoreInstalled = () => {
-    if (!isLegacyStoreInstalled) {
+    if (!hasModernStoreApi && !isLegacyStoreInstalled && typeof VueConstructor?.use === 'function' && VuexConstructor) {
       VueConstructor.use(VuexConstructor)
       isLegacyStoreInstalled = true
     }
   }
 
   const createLegacyRouterInstance = ({ base, routes = [], beforeEach, afterEach }) => {
-    ensureLegacyRouterInstalled()
+    let router = null
 
-    const router = new VueRouterConstructor({
-      mode: 'history',
-      base,
-      routes
-    })
+    if (hasModernRouterApi) {
+      router = createRouter({
+        history: createWebHistory(base),
+        routes
+      })
+    } else {
+      ensureLegacyRouterInstalled()
+      router = new VueRouterConstructor({
+        mode: 'history',
+        base,
+        routes
+      })
+    }
 
     if (beforeEach) {
       router.beforeEach(beforeEach)
@@ -45,11 +68,26 @@ export function createLegacyVueRuntime ({
   }
 
   const createLegacyStoreInstance = (options) => {
+    if (hasModernStoreApi) {
+      return createStore(options)
+    }
+
     ensureLegacyStoreInstalled()
     return new VuexConstructor.Store(options)
   }
 
   const mountLegacyVueInstance = (options) => {
+    if (hasModernAppApi) {
+      const { el, apolloProvider, i18n, router, store, vuetify, ...rootOptions } = options
+      const app = createApp(rootOptions)
+
+      ;[apolloProvider, i18n, router, store, vuetify].filter(Boolean).forEach(plugin => {
+        app.use(plugin)
+      })
+
+      return app.mount(el)
+    }
+
     return new VueConstructor(options)
   }
 
@@ -64,6 +102,7 @@ export function createLegacyVueRuntime ({
 
 const legacyVueRuntime = createLegacyVueRuntime()
 
+export const hasLegacyVueRuntimeAppApi = false
 export const ensureLegacyRouterInstalled = legacyVueRuntime.ensureLegacyRouterInstalled
 export const ensureLegacyStoreInstalled = legacyVueRuntime.ensureLegacyStoreInstalled
 export const createLegacyRouterInstance = legacyVueRuntime.createLegacyRouterInstance

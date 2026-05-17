@@ -1,5 +1,5 @@
 /* eslint-disable import/first */
-import Vue from 'vue'
+import * as VueModule from 'vue'
 import 'vuetify/dist/vuetify.min.css'
 import boot from './modules/boot'
 import { createLegacySetupAppOptions } from './modules/app-options-legacy'
@@ -8,11 +8,13 @@ import { mountLegacyVueApp } from './modules/vue-legacy-instance'
 import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 /* eslint-enable import/first */
 
+const LegacyVue = VueModule.default || VueModule
+
 clearWikiInstance()
 window.boot = boot
 
-installLegacySetupPlugins(Vue)
-registerLegacySetupComponents(Vue)
+installLegacySetupPlugins(LegacyVue)
+registerLegacySetupComponents(LegacyVue)
 
 let bootstrap = () => {
   setWikiInstance(mountLegacyVueApp(createLegacySetupAppOptions({
