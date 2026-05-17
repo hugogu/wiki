@@ -266,6 +266,7 @@ import { sync } from 'vuex-pathify'
 import gql from 'graphql-tag'
 import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
 import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
+import { defineCompatAsyncComponent } from '../../modules/vue-async-component'
 
 import { ensureLegacyStoreModule } from '../../modules/store-legacy'
 import store from '../../store'
@@ -278,7 +279,7 @@ ensureLegacyStoreModule(store, 'editor', editorStore)
 export default {
   i18nOptions: { namespaces: 'editor' },
   components: {
-    editorModalMedia: () => import(/* webpackChunkName: "editor", webpackMode: "lazy" */ '../editor/editor-modal-media.vue')
+    editorModalMedia: defineCompatAsyncComponent(() => import(/* webpackChunkName: "editor", webpackMode: "lazy" */ '../editor/editor-modal-media.vue'))
   },
   data() {
     return {

@@ -32,14 +32,16 @@
 
 <script>
 
+import { defineCompatAsyncComponent } from '../../modules/vue-async-component'
+
 export default {
   components: {
-    UtilityAuth: () => import(/* webpackChunkName: "admin" */ './admin-utilities-auth.vue'),
-    UtilityContent: () => import(/* webpackChunkName: "admin" */ './admin-utilities-content.vue'),
-    UtilityCache: () => import(/* webpackChunkName: "admin" */ './admin-utilities-cache.vue'),
-    UtilityExport: () => import(/* webpackChunkName: "admin" */ './admin-utilities-export.vue'),
-    UtilityImportv1: () => import(/* webpackChunkName: "admin" */ './admin-utilities-importv1.vue'),
-    UtilityTelemetry: () => import(/* webpackChunkName: "admin" */ './admin-utilities-telemetry.vue')
+    UtilityAuth: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-auth.vue')),
+    UtilityContent: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-content.vue')),
+    UtilityCache: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-cache.vue')),
+    UtilityExport: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-export.vue')),
+    UtilityImportv1: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-importv1.vue')),
+    UtilityTelemetry: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-telemetry.vue'))
   },
   data() {
     return {

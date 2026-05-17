@@ -5,10 +5,12 @@ import * as VuexModule from 'vuex'
 const resolveLegacyVueConstructor = (module) => module.default || module
 const resolveLegacyRouterConstructor = (module) => module.default || module.VueRouter || null
 const resolveLegacyStoreConstructor = (module) => module.default || module.Vuex || null
+const resolveModernStoreFactory = (module) => module.createStore || module.default?.createStore || null
 
 const DefaultVueConstructor = resolveLegacyVueConstructor(VueModule)
 const DefaultVueRouterConstructor = resolveLegacyRouterConstructor(VueRouterModule)
 const DefaultVuexConstructor = resolveLegacyStoreConstructor(VuexModule)
+const DefaultCreateStore = resolveModernStoreFactory(VuexModule)
 
 export function createLegacyVueRuntime ({
   VueConstructor = DefaultVueConstructor,
@@ -17,7 +19,7 @@ export function createLegacyVueRuntime ({
   createApp = null,
   createRouter = null,
   createWebHistory = null,
-  createStore = null
+  createStore = DefaultCreateStore
 } = {}) {
   let isLegacyRouterInstalled = false
   let isLegacyStoreInstalled = false

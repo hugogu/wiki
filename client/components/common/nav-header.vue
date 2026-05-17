@@ -255,6 +255,7 @@ import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import { emitPageEvent, onPageEvent, PAGE_EVENTS, SEARCH_EVENTS } from '../../modules/page-events'
 import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
+import { defineCompatAsyncComponent } from '../../modules/vue-async-component'
 
 import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
@@ -262,8 +263,8 @@ import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
 export default {
   components: {
-    PageDelete: () => import('./page-delete.vue'),
-    PageConvert: () => import('./page-convert.vue')
+    PageDelete: defineCompatAsyncComponent(() => import('./page-delete.vue')),
+    PageConvert: defineCompatAsyncComponent(() => import('./page-convert.vue'))
   },
   props: {
     dense: {

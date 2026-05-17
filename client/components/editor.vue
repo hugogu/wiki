@@ -66,6 +66,7 @@ import { StatusIndicator } from 'vue-status-indicator'
 import { emitEditorEvent, EDITOR_EVENTS, onEditorEvent } from '../modules/editor-events'
 import { ensureLegacyStoreModule } from '../modules/store-legacy'
 import { createCompatUnmountHooks } from '../modules/vue-unmount-bridge'
+import { defineCompatAsyncComponent } from '../modules/vue-async-component'
 import store from '../store'
 import editorStore from '../store/editor'
 
@@ -84,19 +85,19 @@ export default {
   components: {
     AtomSpinner,
     StatusIndicator,
-    editorApi: () => import('./editor/editor-api.vue'),
-    editorCode: () => import('./editor/editor-code.vue'),
-    editorCkeditor: () => import('./editor/editor-ckeditor.vue'),
-    editorAsciidoc: () => import('./editor/editor-asciidoc.vue'),
-    editorMarkdown: () => import('./editor/editor-markdown.vue'),
-    editorRedirect: () => import('./editor/editor-redirect.vue'),
-    editorModalEditorselect: () => import('./editor/editor-modal-editorselect.vue'),
-    editorModalProperties: () => import('./editor/editor-modal-properties.vue'),
-    editorModalUnsaved: () => import('./editor/editor-modal-unsaved.vue'),
-    editorModalMedia: () => import('./editor/editor-modal-media.vue'),
-    editorModalBlocks: () => import('./editor/editor-modal-blocks.vue'),
-    editorModalConflict: () => import('./editor/editor-modal-conflict.vue'),
-    editorModalDrawio: () => import('./editor/editor-modal-drawio.vue')
+    editorApi: defineCompatAsyncComponent(() => import('./editor/editor-api.vue')),
+    editorCode: defineCompatAsyncComponent(() => import('./editor/editor-code.vue')),
+    editorCkeditor: defineCompatAsyncComponent(() => import('./editor/editor-ckeditor.vue')),
+    editorAsciidoc: defineCompatAsyncComponent(() => import('./editor/editor-asciidoc.vue')),
+    editorMarkdown: defineCompatAsyncComponent(() => import('./editor/editor-markdown.vue')),
+    editorRedirect: defineCompatAsyncComponent(() => import('./editor/editor-redirect.vue')),
+    editorModalEditorselect: defineCompatAsyncComponent(() => import('./editor/editor-modal-editorselect.vue')),
+    editorModalProperties: defineCompatAsyncComponent(() => import('./editor/editor-modal-properties.vue')),
+    editorModalUnsaved: defineCompatAsyncComponent(() => import('./editor/editor-modal-unsaved.vue')),
+    editorModalMedia: defineCompatAsyncComponent(() => import('./editor/editor-modal-media.vue')),
+    editorModalBlocks: defineCompatAsyncComponent(() => import('./editor/editor-modal-blocks.vue')),
+    editorModalConflict: defineCompatAsyncComponent(() => import('./editor/editor-modal-conflict.vue')),
+    editorModalDrawio: defineCompatAsyncComponent(() => import('./editor/editor-modal-drawio.vue'))
   },
   props: {
     locale: {
