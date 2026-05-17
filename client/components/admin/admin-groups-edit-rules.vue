@@ -199,6 +199,7 @@
 <script>
 import _ from 'lodash'
 import { customAlphabet } from 'nanoid/non-secure'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 /* global siteLangs */
 
@@ -206,6 +207,9 @@ const nanoid = customAlphabet('1234567890abcdef', 10)
 
 export default {
   props: {
+    modelValue: {
+      type: Object
+    },
     value: {
       type: Object,
       default: () => ({})
@@ -239,9 +243,12 @@ export default {
     }
   },
   computed: {
+    groupValue () {
+      return getCompatModelValue(this)
+    },
     group: {
-      get() { return this.value },
-      set(val) { this.$set('input', val) }
+      get() { return this.groupValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     locales() { return siteLangs }
   },

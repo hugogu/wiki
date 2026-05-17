@@ -51,12 +51,16 @@
 
 <script>
 import UserSearch from '../common/user-search.vue'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import assignUserMutation from 'gql/admin/groups/groups-mutation-assign.gql'
 import unassignUserMutation from 'gql/admin/groups/groups-mutation-unassign.gql'
 
 export default {
   props: {
+    modelValue: {
+      type: Object
+    },
     value: {
       type: Object,
       default: () => ({})
@@ -80,9 +84,12 @@ export default {
     }
   },
   computed: {
+    groupValue () {
+      return getCompatModelValue(this)
+    },
     group: {
-      get() { return this.value },
-      set(val) { this.$set('input', val) }
+      get() { return this.groupValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     pages () {
       if (this.pagination.rowsPerPage == null || this.pagination.totalItems == null) {

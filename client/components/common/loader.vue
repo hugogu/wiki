@@ -1,5 +1,5 @@
 <template lang='pug'>
-  v-dialog(v-model='value', persistent, max-width='350', :overlay-color='color', overlay-opacity='.7')
+  v-dialog(v-model='isShown', persistent, max-width='350', :overlay-color='color', overlay-opacity='.7')
     v-card.loader-dialog.radius-7(:color='color', dark)
       v-card-text.text-center.py-4
         atom-spinner.is-inline(
@@ -15,12 +15,16 @@
 
 <script>
 import { AtomSpinner } from 'epic-spinners'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 export default {
   components: {
     AtomSpinner
   },
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -44,6 +48,15 @@ export default {
     icon: {
       type: String,
       default: 'checkmark'
+    }
+  },
+  computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
+    isShown: {
+      get () { return this.dialogValue },
+      set (value) { emitCompatModelValue(this, value) }
     }
   }
 }

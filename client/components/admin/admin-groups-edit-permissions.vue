@@ -31,8 +31,13 @@
 </template>
 
 <script>
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
+
 export default {
   props: {
+    modelValue: {
+      type: Object
+    },
     value: {
       type: Object,
       default: () => ({})
@@ -215,9 +220,12 @@ export default {
     }
   },
   computed: {
+    groupValue () {
+      return getCompatModelValue(this)
+    },
     group: {
-      get() { return this.value },
-      set(val) { this.$set('input', val) }
+      get() { return this.groupValue },
+      set(val) { emitCompatModelValue(this, val) }
     }
   }
 }
