@@ -369,12 +369,9 @@ import mermaid from 'mermaid'
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import ClipboardJS from 'clipboard'
-import Vue from 'vue'
 import { Base64 } from 'js-base64'
 
 /* global siteLangs */
-
-Vue.component('Tabset', Tabset)
 
 const decodeBase64JSON = (value, fallback = null) => {
   if (!value) {
@@ -459,7 +456,8 @@ Prism.plugins.toolbar.registerButton('copy-to-clipboard', (env) => {
 export default {
   components: {
     NavSidebar,
-    StatusIndicator
+    StatusIndicator,
+    Tabset
   },
   props: {
     pageId: {
