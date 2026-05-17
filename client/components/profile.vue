@@ -33,17 +33,13 @@
 
 <script>
 import { createLegacyRouter } from '../modules/router-legacy'
+import { profileRoutes } from '../router/routes-profile'
 
 /* global WIKI */
 
 const router = createLegacyRouter({
   base: '/p',
-  routes: [
-    { path: '/', redirect: '/profile' },
-    { path: '/profile', component: () => import(/* webpackChunkName: "profile" */ './profile/profile.vue') },
-    { path: '/pages', component: () => import(/* webpackChunkName: "profile" */ './profile/pages.vue') },
-    { path: '/comments', component: () => import(/* webpackChunkName: "profile" */ './profile/comments.vue') }
-  ],
+  routes: profileRoutes,
   beforeEach: (to, from, next) => {
     WIKI.$store.commit('loadingStart', 'profile')
     next()
