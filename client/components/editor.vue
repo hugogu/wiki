@@ -63,11 +63,11 @@ import { AtomSpinner } from 'epic-spinners'
 import { Base64 } from 'js-base64'
 import { StatusIndicator } from 'vue-status-indicator'
 
+import { ensureLegacyStoreModule } from '../modules/store-legacy'
+import store from '../store'
 import editorStore from '../store/editor'
 
-/* global WIKI */
-
-WIKI.$store.registerModule('editor', editorStore)
+ensureLegacyStoreModule(store, 'editor', editorStore)
 
 const decodeBase64JSON = (value, fallback = null) => {
   if (!value) {

@@ -133,12 +133,12 @@ import { get, sync } from 'vuex-pathify'
 import statsQuery from 'gql/admin/dashboard/dashboard-query-stats.gql'
 
 import { createLegacyRouter } from '../modules/router-legacy'
+import { ensureLegacyStoreModule } from '../modules/store-legacy'
 import { adminRoutes } from '../router/routes-admin'
+import store from '../store'
 import adminStore from '../store/admin'
 
-/* global WIKI */
-
-WIKI.$store.registerModule('admin', adminStore)
+ensureLegacyStoreModule(store, 'admin', adminStore)
 
 const router = createLegacyRouter({
   base: '/a',

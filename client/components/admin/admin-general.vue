@@ -265,13 +265,13 @@ import _ from 'lodash'
 import { sync } from 'vuex-pathify'
 import gql from 'graphql-tag'
 
+import { ensureLegacyStoreModule } from '../../modules/store-legacy'
+import store from '../../store'
 import editorStore from '../../store/editor'
-
-/* global WIKI */
 
 const titleRegex = /[<>"]/i
 
-WIKI.$store.registerModule('editor', editorStore)
+ensureLegacyStoreModule(store, 'editor', editorStore)
 
 export default {
   i18nOptions: { namespaces: 'editor' },
