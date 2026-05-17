@@ -1,4 +1,5 @@
 import './scss/legacy.scss'
 import './scss/fonts/default.scss'
+import { clearWikiInstance } from './modules/wiki-instance'
 
-window.WIKI = null
+clearWikiInstance()

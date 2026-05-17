@@ -33,19 +33,24 @@
 
 <script>
 import { createLegacyRouter } from '../modules/router-legacy'
+import { getWikiInstance } from '../modules/wiki-instance'
 import { profileRoutes } from '../router/routes-profile'
-
-/* global WIKI */
 
 const router = createLegacyRouter({
   base: '/p',
   routes: profileRoutes,
   beforeEach: (to, from, next) => {
-    WIKI.$store.commit('loadingStart', 'profile')
+    const wiki = getWikiInstance()
+    if (wiki) {
+      wiki.$store.commit('loadingStart', 'profile')
+    }
     next()
   },
   afterEach: () => {
-    WIKI.$store.commit('loadingStop', 'profile')
+    const wiki = getWikiInstance()
+    if (wiki) {
+      wiki.$store.commit('loadingStop', 'profile')
+    }
   }
 })
 

@@ -350,10 +350,11 @@ import gql from 'graphql-tag'
 import _ from 'lodash'
 import Cookies from 'js-cookie'
 import validate from 'validate.js'
+import { getWikiInstance } from '../../modules/wiki-instance'
 
 import PasswordStrength from '../common/password-strength.vue'
 
-/* global WIKI, siteConfig */
+/* global siteConfig */
 
 export default {
   i18nOptions: {
@@ -686,17 +687,25 @@ export default {
   },
   watch: {
     'user.appearance': (newValue, oldValue) => {
+      const wiki = getWikiInstance()
+      if (!wiki) {
+        return
+      }
       if (newValue === '') {
-        WIKI.$vuetify.theme.dark = siteConfig.darkMode
+        wiki.$vuetify.theme.dark = siteConfig.darkMode
       } else {
-        WIKI.$vuetify.theme.dark = (newValue === 'dark')
+        wiki.$vuetify.theme.dark = (newValue === 'dark')
       }
     },
     'user.dateFormat': (newValue, oldValue) => {
+      const wiki = getWikiInstance()
+      if (!wiki) {
+        return
+      }
       if (newValue === '') {
-        WIKI.$moment.updateLocale(WIKI.$moment.locale(), null)
+        wiki.$moment.updateLocale(wiki.$moment.locale(), null)
       } else {
-        WIKI.$moment.updateLocale(WIKI.$moment.locale(), {
+        wiki.$moment.updateLocale(wiki.$moment.locale(), {
           longDateFormat: {
             'L': newValue
           }
@@ -704,10 +713,14 @@ export default {
       }
     },
     'user.timezone': (newValue, oldValue) => {
+      const wiki = getWikiInstance()
+      if (!wiki) {
+        return
+      }
       if (newValue === '') {
-        WIKI.$moment.tz.setDefault()
+        wiki.$moment.tz.setDefault()
       } else {
-        WIKI.$moment.tz.setDefault(newValue)
+        wiki.$moment.tz.setDefault(newValue)
       }
     }
   },

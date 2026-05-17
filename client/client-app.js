@@ -31,6 +31,7 @@ import {
   registerLegacyAppComponents
 } from './modules/vue-legacy-app'
 import { mountLegacyVueApp } from './modules/vue-legacy-instance'
+import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 
 // ====================================
 // Load Helpers
@@ -151,7 +152,7 @@ const buildPageMountOptions = () => {
 // Initialize Global Vars
 // ====================================
 
-window.WIKI = null
+clearWikiInstance()
 window.boot = boot
 window.Hammer = Hammer
 
@@ -277,7 +278,7 @@ let bootstrap = () => {
 
   const pageMountOptions = buildPageMountOptions()
 
-  window.WIKI = mountLegacyVueApp({
+  setWikiInstance(mountLegacyVueApp({
     el: '#root',
     components: {},
     mixins: [helpers],
@@ -292,7 +293,7 @@ let bootstrap = () => {
       applyLegacyMomentPreferences(this, store, siteConfig)
     },
     ...(pageMountOptions || {})
-  })
+  }))
 
   // ----------------------------------
   // Dispatch boot ready
