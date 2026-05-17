@@ -362,10 +362,16 @@ export default {
     this.isDevMode = siteConfig.devMode === true
   },
   beforeDestroy () {
-    this.pageEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-    this.pageEventUnsubscribers = []
+    this.disposePageEvents()
+  },
+  beforeUnmount () {
+    this.disposePageEvents()
   },
   methods: {
+    disposePageEvents () {
+      this.pageEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.pageEventUnsubscribers = []
+    },
     searchFocus () {
       this.searchIsFocused = true
     },

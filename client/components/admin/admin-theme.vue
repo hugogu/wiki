@@ -199,10 +199,16 @@ export default {
     this.darkModeInitial = this.darkMode
   },
   beforeDestroy() {
-    this.darkMode = this.darkModeInitial
-    this.$vuetify.theme.dark = this.darkModeInitial
+    this.restoreDarkMode()
+  },
+  beforeUnmount() {
+    this.restoreDarkMode()
   },
   methods: {
+    restoreDarkMode() {
+      this.darkMode = this.darkModeInitial
+      this.$vuetify.theme.dark = this.darkModeInitial
+    },
     async save () {
       this.loading = true
       this.$store.commit(`loadingStart`, 'admin-theme-save')

@@ -336,6 +336,12 @@ export default {
     }
   },
   methods: {
+    disposeEditorEvents() {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     async save () {
       const title = _.get(this.config, 'title', '')
       if (titleRegex.test(title)) {
@@ -463,10 +469,10 @@ export default {
     ]
   },
   beforeDestroy() {
-    if (this.editorEventUnsubscribers) {
-      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-      this.editorEventUnsubscribers = null
-    }
+    this.disposeEditorEvents()
+  },
+  beforeUnmount() {
+    this.disposeEditorEvents()
   },
   apollo: {
     config: {

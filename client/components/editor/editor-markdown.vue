@@ -505,6 +505,12 @@ export default {
     }
   },
   methods: {
+    disposeEditorEvents() {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     toggleModal(key) {
       this.activeModal = (this.activeModal === key) ? '' : key
       this.helpShown = false
@@ -960,10 +966,10 @@ export default {
     ]
   },
   beforeDestroy() {
-    if (this.editorEventUnsubscribers) {
-      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-      this.editorEventUnsubscribers = null
-    }
+    this.disposeEditorEvents()
+  },
+  beforeUnmount() {
+    this.disposeEditorEvents()
   }
 }
 </script>

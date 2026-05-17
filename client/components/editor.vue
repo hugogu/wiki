@@ -273,12 +273,18 @@ export default {
     // this.currentEditor = `editorApi`
   },
   beforeDestroy () {
-    if (this.editorEventUnsubscribers) {
-      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-      this.editorEventUnsubscribers = null
-    }
+    this.disposeEditorEvents()
+  },
+  beforeUnmount () {
+    this.disposeEditorEvents()
   },
   methods: {
+    disposeEditorEvents () {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     openPropsModal(name) {
       this.dialogProps = true
     },

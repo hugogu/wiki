@@ -38,6 +38,9 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    disposeMessageListener () {
+      window.removeEventListener('message', this.receive)
+    },
     close () {
       this.activeModal = ''
     },
@@ -100,7 +103,10 @@ export default {
     window.addEventListener('message', this.receive)
   },
   beforeDestroy () {
-    window.removeEventListener('message', this.receive)
+    this.disposeMessageListener()
+  },
+  beforeUnmount () {
+    this.disposeMessageListener()
   }
 }
 </script>

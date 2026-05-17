@@ -136,10 +136,16 @@ export default {
     ]
   },
   beforeDestroy () {
-    this.searchEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-    this.searchEventUnsubscribers = []
+    this.disposeSearchEvents()
+  },
+  beforeUnmount () {
+    this.disposeSearchEvents()
   },
   methods: {
+    disposeSearchEvents () {
+      this.searchEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.searchEventUnsubscribers = []
+    },
     setSearchTerm(term) {
       this.search = term
     },

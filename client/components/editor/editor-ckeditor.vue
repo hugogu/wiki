@@ -56,6 +56,16 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    disposeEditor () {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+      if (this.editor) {
+        this.editor.destroy()
+        this.editor = null
+      }
+    },
     insertLink () {
       this.insertLinkDialog = true
     },
@@ -132,14 +142,10 @@ export default {
     ]
   },
   beforeDestroy () {
-    if (this.editorEventUnsubscribers) {
-      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-      this.editorEventUnsubscribers = null
-    }
-    if (this.editor) {
-      this.editor.destroy()
-      this.editor = null
-    }
+    this.disposeEditor()
+  },
+  beforeUnmount () {
+    this.disposeEditor()
   }
 }
 </script>

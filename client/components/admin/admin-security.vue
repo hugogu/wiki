@@ -293,6 +293,12 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    disposeEditorEvents() {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     async save () {
       try {
         await this.$apollo.mutate({
@@ -400,10 +406,10 @@ export default {
     ]
   },
   beforeDestroy() {
-    if (this.editorEventUnsubscribers) {
-      this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
-      this.editorEventUnsubscribers = null
-    }
+    this.disposeEditorEvents()
+  },
+  beforeUnmount() {
+    this.disposeEditorEvents()
   },
   apollo: {
     config: {
