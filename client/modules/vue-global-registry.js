@@ -18,6 +18,15 @@ export function assignGlobalProperties (target, properties) {
   Object.assign(target.prototype, properties)
 }
 
+export function defineGlobalProperties (target, descriptors) {
+  if (target?.config?.globalProperties) {
+    Object.defineProperties(target.config.globalProperties, descriptors)
+    return
+  }
+
+  Object.defineProperties(target.prototype, descriptors)
+}
+
 export function registerGlobalComponents (target, components) {
   components.forEach(component => {
     target.component(component.name, component.loader)

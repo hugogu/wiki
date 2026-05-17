@@ -1,6 +1,7 @@
 import filesize from 'filesize.js'
 import _ from 'lodash'
 import moment from 'moment-timezone'
+import { assignGlobalProperties, defineGlobalProperties } from '../modules/vue-global-registry'
 
 /* global siteConfig */
 
@@ -109,13 +110,9 @@ export default {
       }
     }
 
-    if (appOrVue?.config?.globalProperties) {
-      Object.defineProperties(appOrVue.config.globalProperties, descriptors)
-      appOrVue.$helpers = helpers
-      return
-    }
-
-    appOrVue.$helpers = helpers
-    Object.defineProperties(appOrVue.prototype, descriptors)
+    assignGlobalProperties(appOrVue, {
+      $helpers: helpers
+    })
+    defineGlobalProperties(appOrVue, descriptors)
   }
 }
