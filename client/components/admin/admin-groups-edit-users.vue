@@ -19,7 +19,8 @@
       :items='group.users',
       :headers='headers',
       :search='search'
-      :page.sync='pagination'
+      :page='pagination'
+      @update:page='pagination = $event'
       :items-per-page='15'
       @page-count='pageCount = $event'
       must-sort,

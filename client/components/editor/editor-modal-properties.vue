@@ -12,7 +12,7 @@
       v-btn.mx-0(
         outlined
         dark
-        @click.native='close'
+        @click='close'
         )
         v-icon(left) mdi-check
         span {{ $t('common:actions.ok') }}
@@ -88,7 +88,8 @@
               :loading='$apollo.queries.newTagSuggestions.loading'
               persistent-hint
               hide-no-data
-              :search-input.sync='newTagSearch'
+              :search-input='newTagSearch'
+              @update:search-input='newTagSearch = $event'
               )
         v-tab-item(transition='fade-transition', reverse-transition='fade-transition')
           v-card-text
@@ -110,7 +111,8 @@
                     ref='menuPublishStart'
                     :close-on-content-click='false'
                     v-model='isPublishStartShown'
-                    :return-value.sync='publishStartDate'
+                    :return-value='publishStartDate'
+                    @update:return-value='publishStartDate = $event'
                     width='460px'
                     :disabled='!isPublished'
                     )
@@ -151,7 +153,8 @@
                     ref='menuPublishEnd'
                     :close-on-content-click='false'
                     v-model='isPublishEndShown'
-                    :return-value.sync='publishEndDate'
+                    :return-value='publishEndDate'
+                    @update:return-value='publishEndDate = $event'
                     width='460px'
                     :disabled='!isPublished'
                     )

@@ -30,8 +30,10 @@
             vue-scroll(:ops='scrollStyle')
               v-treeview(
                 :key='`pageTree-` + treeViewCacheId'
-                :active.sync='currentNode'
-                :open.sync='openNodes'
+                :active='currentNode'
+                @update:active='currentNode = $event'
+                :open='openNodes'
+                @update:open='openNodes = $event'
                 :items='tree'
                 :load-children='fetchFolders'
                 dense
