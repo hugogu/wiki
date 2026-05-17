@@ -131,6 +131,7 @@ import { Base64 } from 'js-base64'
 import { get, sync } from 'vuex-pathify'
 import DOMPurify from 'dompurify'
 import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 // ========================================
 // IMPORTS
@@ -498,12 +499,7 @@ export default {
       })
     ]
   },
-  beforeDestroy() {
-    this.disposeEditorEvents()
-  },
-  beforeUnmount() {
-    this.disposeEditorEvents()
-  }
+  ...createCompatUnmountHooks('disposeEditorEvents')
 }
 </script>
 

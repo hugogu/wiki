@@ -244,6 +244,7 @@ import _ from 'lodash'
 import { sync } from 'vuex-pathify'
 import gql from 'graphql-tag'
 import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 import { ensureLegacyStoreModule } from '../../modules/store-legacy'
 import store from '../../store'
@@ -405,12 +406,7 @@ export default {
       })
     ]
   },
-  beforeDestroy() {
-    this.disposeEditorEvents()
-  },
-  beforeUnmount() {
-    this.disposeEditorEvents()
-  },
+  ...createCompatUnmountHooks('disposeEditorEvents'),
   apollo: {
     config: {
       query: gql`

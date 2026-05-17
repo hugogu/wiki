@@ -10,6 +10,7 @@
 <script>
 import { sync, get } from 'vuex-pathify'
 import { EDITOR_EVENTS, emitEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 // const xmlTest = `<?xml version="1.0" encoding="UTF-8"?>
 // <mxfile version="13.4.2">
@@ -102,12 +103,7 @@ export default {
   async mounted () {
     window.addEventListener('message', this.receive)
   },
-  beforeDestroy () {
-    this.disposeMessageListener()
-  },
-  beforeUnmount () {
-    this.disposeMessageListener()
-  }
+  ...createCompatUnmountHooks('disposeMessageListener')
 }
 </script>
 

@@ -59,6 +59,7 @@ import _ from 'lodash'
 import { sync } from 'vuex-pathify'
 import { OrbitSpinner } from 'epic-spinners'
 import { onPageEvent, SEARCH_EVENTS } from '../../modules/page-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 import searchPagesQuery from 'gql/common/common-pages-query-search.gql'
 
@@ -135,12 +136,7 @@ export default {
       })
     ]
   },
-  beforeDestroy () {
-    this.disposeSearchEvents()
-  },
-  beforeUnmount () {
-    this.disposeSearchEvents()
-  },
+  ...createCompatUnmountHooks('disposeSearchEvents'),
   methods: {
     disposeSearchEvents () {
       this.searchEventUnsubscribers.forEach(unsubscribe => unsubscribe())

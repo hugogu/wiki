@@ -22,6 +22,7 @@ import DecoupledEditor from '@requarks/ckeditor5'
 import EditorConflict from './ckeditor/conflict.vue'
 import { html as beautify } from 'js-beautify/js/lib/beautifier.min.js'
 import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 /* global siteLangs */
 
@@ -141,12 +142,7 @@ export default {
       })
     ]
   },
-  beforeDestroy () {
-    this.disposeEditor()
-  },
-  beforeUnmount () {
-    this.disposeEditor()
-  }
+  ...createCompatUnmountHooks('disposeEditor')
 }
 </script>
 

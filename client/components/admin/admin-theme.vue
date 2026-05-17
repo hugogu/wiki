@@ -131,6 +131,7 @@
 <script>
 import _ from 'lodash'
 import { sync } from 'vuex-pathify'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 import themeConfigQuery from 'gql/admin/theme/theme-query-config.gql'
 import themeSaveMutation from 'gql/admin/theme/theme-mutation-save.gql'
@@ -198,12 +199,7 @@ export default {
   mounted() {
     this.darkModeInitial = this.darkMode
   },
-  beforeDestroy() {
-    this.restoreDarkMode()
-  },
-  beforeUnmount() {
-    this.restoreDarkMode()
-  },
+  ...createCompatUnmountHooks('restoreDarkMode'),
   methods: {
     restoreDarkMode() {
       this.darkMode = this.darkModeInitial

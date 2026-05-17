@@ -60,6 +60,7 @@
 import _ from 'lodash'
 import { get, sync } from 'vuex-pathify'
 import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 // ========================================
 // IMPORTS
@@ -261,12 +262,7 @@ export default {
       })
     ]
   },
-  beforeDestroy() {
-    this.disposeEditorEvents()
-  },
-  beforeUnmount() {
-    this.disposeEditorEvents()
-  }
+  ...createCompatUnmountHooks('disposeEditorEvents')
 }
 </script>
 

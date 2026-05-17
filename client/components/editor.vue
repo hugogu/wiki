@@ -65,6 +65,7 @@ import { StatusIndicator } from 'vue-status-indicator'
 
 import { emitEditorEvent, EDITOR_EVENTS, onEditorEvent } from '../modules/editor-events'
 import { ensureLegacyStoreModule } from '../modules/store-legacy'
+import { createCompatUnmountHooks } from '../modules/vue-unmount-bridge'
 import store from '../store'
 import editorStore from '../store/editor'
 
@@ -272,12 +273,7 @@ export default {
     // this.$store.set('editor/mode', 'edit')
     // this.currentEditor = `editorApi`
   },
-  beforeDestroy () {
-    this.disposeEditorEvents()
-  },
-  beforeUnmount () {
-    this.disposeEditorEvents()
-  },
+  ...createCompatUnmountHooks('disposeEditorEvents'),
   methods: {
     disposeEditorEvents () {
       if (this.editorEventUnsubscribers) {

@@ -223,6 +223,7 @@ import 'prismjs/plugins/line-numbers/prism-line-numbers'
 import 'prismjs/plugins/normalize-whitespace/prism-normalize-whitespace'
 import { Base64 } from 'js-base64'
 import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 // Mermaid
 import mermaid from 'mermaid'
@@ -965,12 +966,7 @@ export default {
       })
     ]
   },
-  beforeDestroy() {
-    this.disposeEditorEvents()
-  },
-  beforeUnmount() {
-    this.disposeEditorEvents()
-  }
+  ...createCompatUnmountHooks('disposeEditorEvents')
 }
 </script>
 

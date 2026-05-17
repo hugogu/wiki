@@ -254,6 +254,7 @@
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import { emitPageEvent, onPageEvent, PAGE_EVENTS, SEARCH_EVENTS } from '../../modules/page-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
@@ -362,12 +363,7 @@ export default {
     ]
     this.isDevMode = siteConfig.devMode === true
   },
-  beforeDestroy () {
-    this.disposePageEvents()
-  },
-  beforeUnmount () {
-    this.disposePageEvents()
-  },
+  ...createCompatUnmountHooks('disposePageEvents'),
   methods: {
     disposePageEvents () {
       this.pageEventUnsubscribers.forEach(unsubscribe => unsubscribe())
