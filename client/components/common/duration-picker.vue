@@ -55,9 +55,13 @@
 <script>
 import _ from 'lodash'
 import moment from 'moment'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 export default {
   props: {
+    modelValue: {
+      type: String
+    },
     value: {
       type: String,
       default: 'PT5M'
@@ -69,6 +73,9 @@ export default {
     }
   },
   computed: {
+    durationValue () {
+      return getCompatModelValue(this)
+    },
     years: {
       get() { return this.duration.years() || 0 },
       set(val) { this.rebuild(_.toNumber(val), 'years') }
@@ -91,7 +98,7 @@ export default {
     }
   },
   watch: {
-    value(newValue, oldValue) {
+    durationValue(newValue, oldValue) {
       this.duration = moment.duration(newValue)
     }
   },
@@ -109,11 +116,11 @@ export default {
       }
       _.set(newDuration, unit, val)
       this.duration = moment.duration(newDuration)
-      this.$emit('input', this.duration.toISOString())
+      emitCompatModelValue(this, this.duration.toISOString())
     }
   },
   mounted() {
-    this.duration = moment.duration(this.value)
+    this.duration = moment.duration(this.durationValue)
   }
 }
 </script>

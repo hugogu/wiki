@@ -1,5 +1,3 @@
-import 'core-js/stable'
-import 'regenerator-runtime/runtime'
 import './libs/modernizr/modernizr.js'
 import './libs/prism/prism.css'
 import 'prismjs/plugins/toolbar/prism-toolbar.css'

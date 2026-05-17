@@ -19,7 +19,8 @@
       :items='group.users',
       :headers='headers',
       :search='search'
-      :page.sync='pagination'
+      :page='pagination'
+      @update:page='pagination = $event'
       :items-per-page='15'
       @page-count='pageCount = $event'
       must-sort,
@@ -40,7 +41,7 @@
                 v-list-item-action: v-icon(color='orange') mdi-account-remove-outline
                 v-list-item-content
                   v-list-item-title Unassign
-      template(slot='no-data')
+      template(v-slot:no-data)
         v-alert.ma-3(icon='mdi-alert', outlined) No users to display.
     .text-center.py-2(v-if='group.users.length > 15')
       v-pagination(v-model='pagination', :length='pageCount')
@@ -50,12 +51,16 @@
 
 <script>
 import UserSearch from '../common/user-search.vue'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import assignUserMutation from 'gql/admin/groups/groups-mutation-assign.gql'
 import unassignUserMutation from 'gql/admin/groups/groups-mutation-unassign.gql'
 
 export default {
   props: {
+    modelValue: {
+      type: Object
+    },
     value: {
       type: Object,
       default: () => ({})
@@ -79,9 +84,12 @@ export default {
     }
   },
   computed: {
+    groupValue () {
+      return getCompatModelValue(this)
+    },
     group: {
-      get() { return this.value },
-      set(val) { this.$set('input', val) }
+      get() { return this.groupValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     pages () {
       if (this.pagination.rowsPerPage == null || this.pagination.totalItems == null) {

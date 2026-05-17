@@ -39,8 +39,8 @@
                 template(v-if='folderTree.length > 0')
                   .body-2
                     span.mr-1 /
-                    template(v-for='folder of folderTree')
-                      span(:key='folder.id') {{folder.name}}
+                    template(v-for='folder of folderTree', :key='folder.id')
+                      span {{folder.name}}
                       span.mx-1 /
                 .body-2(v-else) / #[em root]
               template(v-if='folders.length > 0 || currentFolderId > 0')
@@ -53,7 +53,8 @@
               v-data-table(
                 :items='assets'
                 :headers='headers'
-                :page.sync='pagination'
+                :page='pagination'
+                @update:page='pagination = $event'
                 :items-per-page='15'
                 :loading='loading'
                 must-sort,
@@ -62,7 +63,7 @@
                 hide-default-footer,
                 dense
               )
-                template(slot='item', slot-scope='props')
+                template(v-slot:item='props')
                   tr.is-clickable(
                     @click.left='currentFileId = props.item.id'
                     @click.right.prevent=''
@@ -75,8 +76,8 @@
                     td.text-xs-center(v-if='$vuetify.breakpoint.lgAndUp')
                       v-chip.ma-0(x-small, :color='$vuetify.theme.dark ? `grey darken-4` : `grey lighten-4`')
                         .overline {{props.item.ext.toUpperCase().substring(1)}}
-                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ props.item.fileSize | prettyBytes }}
-                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ props.item.createdAt | moment('from') }}
+                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ $helpers.prettyBytes(props.item.fileSize) }}
+                    td.caption(v-if='$vuetify.breakpoint.mdAndUp') {{ $formatMoment(props.item.createdAt, 'from') }}
                     td(v-if='$vuetify.breakpoint.smAndUp')
                       v-menu(offset-x, min-width='200')
                         template(v-slot:activator='{ on }')
@@ -112,7 +113,7 @@
                             v-list-item-avatar(size='24')
                               v-icon(color='red') mdi-file-hidden
                             v-list-item-content {{$t('common:actions.delete')}}
-                template(slot='no-data')
+                template(v-slot:no-data)
                   v-alert.mt-3.radius-7(icon='mdi-folder-open-outline', :value='true', outlined, color='teal') {{$t('editor:assets.folderEmpty')}}
               .text-xs-center.py-2(v-if='this.pageTotal > 1')
                 v-pagination(v-model='pagination', :length='pageTotal', color='teal')
@@ -233,6 +234,8 @@ import { get, sync } from 'vuex-pathify'
 import Cookies from 'js-cookie'
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
+import { EDITOR_EVENTS, emitEditorEvent } from '../../modules/editor-events'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import listAssetQuery from 'gql/editor/editor-media-query-list.gql'
 import listFolderAssetQuery from 'gql/editor/editor-media-query-folder-list.gql'
@@ -249,6 +252,9 @@ export default {
     FilePond
   },
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -282,9 +288,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     editorKey: get('editor/editorKey'),
     activeModal: sync('editor/activeModal'),
@@ -335,30 +344,6 @@ export default {
       }
     }
   },
-  filters: {
-    prettyBytes(num) {
-      if (typeof num !== 'number' || isNaN(num)) {
-        throw new TypeError('Expected a number')
-      }
-
-      let exponent
-      let unit
-      let neg = num < 0
-      let units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-      if (neg) {
-        num = -num
-      }
-      if (num < 1) {
-        return (neg ? '-' : '') + num + ' B'
-      }
-      exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1)
-      num = (num / Math.pow(1000, exponent)).toFixed(2) * 1
-      unit = units[exponent]
-
-      return (neg ? '-' : '') + num + ' ' + unit
-    }
-  },
   methods: {
     async refresh() {
       await this.$apollo.queries.assets.refetch()
@@ -371,7 +356,7 @@ export default {
     insert () {
       const asset = _.find(this.assets, ['id', this.currentFileId])
       const assetPath = this.folderTree.map(f => f.slug).join('/')
-      this.$root.$emit('editorInsert', {
+      emitEditorEvent(EDITOR_EVENTS.INSERT, {
         kind: asset.kind,
         path: this.currentFolderId > 0 ? `/${assetPath}/${asset.filename}` : `/${asset.filename}`,
         text: asset.filename,

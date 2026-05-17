@@ -1,11 +1,10 @@
 import path from 'node:path'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue2'
+import vue from '@vitejs/plugin-vue'
 import graphql from '@rollup/plugin-graphql'
 
 const ROOT_PATH = process.cwd()
 const OUTPUT_PATH = path.join(ROOT_PATH, 'assets')
-const VUE_ESM_PATH = path.join(ROOT_PATH, 'node_modules', 'vue', 'dist', 'vue.esm.js')
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
@@ -19,6 +18,11 @@ export default defineConfig(({ mode }) => {
       }),
       vue({
         template: {
+          compilerOptions: {
+            compatConfig: {
+              MODE: 2
+            }
+          },
           transformAssetUrls: false,
           preprocessOptions: {
             doctype: 'html'
@@ -33,10 +37,11 @@ export default defineConfig(({ mode }) => {
     resolve: {
       dedupe: ['vue'],
       alias: [
-        { find: 'vue/dist/vue.esm', replacement: VUE_ESM_PATH },
-        { find: 'vue/dist/vue.esm.js', replacement: VUE_ESM_PATH },
-        { find: 'vue/dist/vue.runtime.esm.js', replacement: VUE_ESM_PATH },
-        { find: /^vue$/, replacement: VUE_ESM_PATH },
+        { find: 'vue/dist/vue.esm', replacement: '@vue/compat' },
+        { find: 'vue/dist/vue.esm.js', replacement: '@vue/compat' },
+        { find: 'vue/dist/vue.runtime.esm.js', replacement: '@vue/compat' },
+        { find: /^vue$/, replacement: '@vue/compat' },
+        { find: 'vuex-pathify', replacement: 'vuex-pathify/dist/vuex-pathify.esm.js' },
         { find: '@', replacement: path.join(ROOT_PATH, 'client') },
         { find: 'gql', replacement: path.join(ROOT_PATH, 'client', 'graph') },
         { find: 'apollo-link', replacement: path.join(ROOT_PATH, 'node_modules', 'apollo-link') },

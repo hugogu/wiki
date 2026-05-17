@@ -155,7 +155,8 @@
               autocomplete='new-password'
               light
               )
-              password-strength(slot='progress', v-model='newPassword')
+              template(v-slot:progress)
+                password-strength(v-model='newPassword')
             v-text-field.mt-2(
               type='password'
               solo

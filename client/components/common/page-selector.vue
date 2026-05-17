@@ -30,8 +30,10 @@
             vue-scroll(:ops='scrollStyle')
               v-treeview(
                 :key='`pageTree-` + treeViewCacheId'
-                :active.sync='currentNode'
-                :open.sync='openNodes'
+                :active='currentNode'
+                @update:active='currentNode = $event'
+                :open='openNodes'
+                @update:open='openNodes = $event'
                 :items='tree'
                 :load-children='fetchFolders'
                 dense
@@ -41,7 +43,7 @@
                 activatable
                 hoverable
                 )
-                template(slot='prepend', slot-scope='{ item, open, leaf }')
+                template(v-slot:prepend='{ item, open, leaf }')
                   v-icon mdi-{{ open ? 'folder-open' : 'folder' }}
         v-flex(xs7)
           v-toolbar(color='blue darken-2', dark, dense, flat)
@@ -56,8 +58,8 @@
                   v-model='currentPage'
                   color='primary'
                   )
-                  template(v-for='(page, idx) of currentPages')
-                    v-list-item(:key='`page-` + page.id', :value='page')
+                  template(v-for='(page, idx) of currentPages', :key='`page-` + page.id')
+                    v-list-item(:value='page')
                       v-list-item-icon: v-icon mdi-text-box
                       v-list-item-title {{page.title}}
                     v-divider(v-if='idx < pages.length - 1')
@@ -102,6 +104,7 @@
 <script>
 import _ from 'lodash'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 const localeSegmentRegex = /^[A-Z]{2}(-[A-Z]{2})?$/i
 
@@ -109,6 +112,9 @@ const localeSegmentRegex = /^[A-Z]{2}(-[A-Z]{2})?$/i
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -175,9 +181,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     currentPages () {
       return _.sortBy(_.filter(this.pages, ['parent', _.head(this.currentNode) || 0]), ['title', 'path'])

@@ -7,9 +7,9 @@
           v-list-item(href='/')
             v-list-item-icon: v-icon mdi-home
             v-list-item-title {{$t('common:header.home')}}
-          template(v-for='(tags, groupName) in tagsGrouped')
+          template(v-for='(tags, groupName) in tagsGrouped', :key='`tagGroup-` + groupName')
             v-divider.my-2
-            v-subheader.pl-4(:key='`tagGroup-` + groupName') {{groupName}}
+            v-subheader.pl-4 {{groupName}}
             v-list-item(v-for='tag of tags', @click='toggleTag(tag.tag)', :key='`tag-` + tag.tag')
               v-list-item-icon
                 v-icon(v-if='isSelected(tag.tag)', color='primary') mdi-checkbox-intermediate
@@ -97,7 +97,8 @@
           :items-per-page='4'
           :search='innerSearch'
           :loading='isLoading'
-          :options.sync='pagination'
+          :options='pagination'
+          @update:options='pagination = $event'
           @page-count='pageTotal = $event'
           hide-default-footer
           ref='dude'
@@ -137,7 +138,7 @@
                       .body-1: strong.primary--text {{item.title}}
                       v-spacer
                       i18next.caption(tag='div', path='tags:pageLastUpdated')
-                        span(place='date') {{item.updatedAt | moment('from')}}
+                        span(place='date') {{ $formatMoment(item.updatedAt, 'from') }}
                     .body-2.grey--text {{item.description || '---'}}
                     v-divider.my-2
                     .d-flex.flex-row.align-center
@@ -152,16 +153,15 @@
 </template>
 
 <script>
-import VueRouter from 'vue-router'
 import _ from 'lodash'
 
 import tagsQuery from 'gql/common/common-pages-query-tags.gql'
 import pagesQuery from 'gql/common/common-pages-query-list.gql'
+import { createLegacyRouter } from '../modules/router-legacy'
 
 /* global siteLangs */
 
-const router = new VueRouter({
-  mode: 'history',
+const router = createLegacyRouter({
   base: '/t'
 })
 

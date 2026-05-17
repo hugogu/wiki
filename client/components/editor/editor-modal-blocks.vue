@@ -22,9 +22,13 @@
 <script>
 import _ from 'lodash'
 import { sync } from 'vuex-pathify'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -49,9 +53,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     activeModal: sync('editor/activeModal')
   },

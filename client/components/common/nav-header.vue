@@ -1,22 +1,23 @@
 <template lang='pug'>
   v-app-bar.nav-header(color='black', dark, app, :clipped-left='!$vuetify.rtl', :clipped-right='$vuetify.rtl', fixed, flat, :extended='searchIsShown && $vuetify.breakpoint.smAndDown')
-    v-toolbar(color='deep-purple', flat, slot='extension', v-if='searchIsShown && $vuetify.breakpoint.smAndDown')
-      v-text-field(
-        ref='searchFieldMobile'
-        v-model='search'
-        clearable
-        background-color='deep-purple'
-        color='white'
-        :label='$t(`common:header.search`)'
-        single-line
-        solo
-        flat
-        hide-details
-        prepend-inner-icon='mdi-magnify'
-        :loading='searchIsLoading'
-        @keyup.enter='searchEnter'
-        autocomplete='off'
-      )
+    template(v-slot:extension)
+      v-toolbar(color='deep-purple', flat, v-if='searchIsShown && $vuetify.breakpoint.smAndDown')
+        v-text-field(
+          ref='searchFieldMobile'
+          v-model='search'
+          clearable
+          background-color='deep-purple'
+          color='white'
+          :label='$t(`common:header.search`)'
+          single-line
+          solo
+          flat
+          hide-details
+          prepend-inner-icon='mdi-magnify'
+          :loading='searchIsLoading'
+          @keyup.enter='searchEnter'
+          autocomplete='off'
+        )
     v-layout(row)
       v-flex(xs5, md4)
         v-toolbar.nav-header-inner(color='black', dark, flat, :class='$vuetify.rtl ? `pr-3` : `pl-3`')
@@ -111,7 +112,7 @@
                       v-icon(color='grey') mdi-web
                   span {{$t('common:header.language')}}
               v-list(nav)
-                template(v-for='(lc, idx) of locales')
+                template(v-for='(lc, idx) of locales', :key='lc.code')
                   v-list-item(@click='changeLocale(lc)')
                     v-list-item-action(style='min-width:auto;'): v-chip(:color='lc.code === locale ? `blue` : `grey`', small, label, dark) {{lc.code.toUpperCase()}}
                     v-list-item-title {{lc.name}}
@@ -252,6 +253,9 @@
 <script>
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
+import { emitPageEvent, onPageEvent, PAGE_EVENTS, SEARCH_EVENTS } from '../../modules/page-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
+import { defineCompatAsyncComponent } from '../../modules/vue-async-component'
 
 import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
@@ -259,8 +263,8 @@ import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
 export default {
   components: {
-    PageDelete: () => import('./page-delete.vue'),
-    PageConvert: () => import('./page-convert.vue')
+    PageDelete: defineCompatAsyncComponent(() => import('./page-delete.vue')),
+    PageConvert: defineCompatAsyncComponent(() => import('./page-convert.vue'))
   },
   props: {
     dense: {
@@ -283,6 +287,7 @@ export default {
       deletePageModal: false,
       locales: siteLangs,
       isDevMode: false,
+      pageEventUnsubscribers: [],
       duplicateOpts: {
         locale: 'en',
         path: 'new-page',
@@ -348,30 +353,23 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('pageEdit', () => {
-      this.pageEdit()
-    })
-    this.$root.$on('pageHistory', () => {
-      this.pageHistory()
-    })
-    this.$root.$on('pageSource', () => {
-      this.pageSource()
-    })
-    this.$root.$on('pageMove', () => {
-      this.pageMove()
-    })
-    this.$root.$on('pageConvert', () => {
-      this.pageConvert()
-    })
-    this.$root.$on('pageDuplicate', () => {
-      this.pageDuplicate()
-    })
-    this.$root.$on('pageDelete', () => {
-      this.pageDelete()
-    })
+    this.pageEventUnsubscribers = [
+      onPageEvent(PAGE_EVENTS.EDIT, () => this.pageEdit()),
+      onPageEvent(PAGE_EVENTS.HISTORY, () => this.pageHistory()),
+      onPageEvent(PAGE_EVENTS.SOURCE, () => this.pageSource()),
+      onPageEvent(PAGE_EVENTS.MOVE, () => this.pageMove()),
+      onPageEvent(PAGE_EVENTS.CONVERT, () => this.pageConvert()),
+      onPageEvent(PAGE_EVENTS.DUPLICATE, () => this.pageDuplicate()),
+      onPageEvent(PAGE_EVENTS.DELETE, () => this.pageDelete())
+    ]
     this.isDevMode = siteConfig.devMode === true
   },
+  ...createCompatUnmountHooks('disposePageEvents'),
   methods: {
+    disposePageEvents () {
+      this.pageEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+      this.pageEventUnsubscribers = []
+    },
     searchFocus () {
       this.searchIsFocused = true
     },
@@ -391,10 +389,10 @@ export default {
       }
     },
     searchEnter () {
-      this.$root.$emit('searchEnter', true)
+      emitPageEvent(SEARCH_EVENTS.ENTER, true)
     },
     searchMove(dir) {
-      this.$root.$emit('searchMove', dir)
+      emitPageEvent(SEARCH_EVENTS.MOVE, dir)
     },
     pageNew () {
       this.newPageModal = true

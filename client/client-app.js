@@ -1,7 +1,6 @@
 /* global siteConfig */
 
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import './modules/vue-compat'
 import VueClipboards from 'vue-clipboards'
 import { ApolloClient } from 'apollo-client'
 import { BatchHttpLink } from 'apollo-link-batch-http'
@@ -10,14 +9,11 @@ import { WebSocketLink } from 'apollo-link-ws'
 import { ErrorLink } from 'apollo-link-error'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { getMainDefinition } from 'apollo-utilities'
-import VueApollo from 'vue-apollo'
-import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import Velocity from 'velocity-animate'
 import Vuescroll from 'vuescroll/dist/vuescroll-native'
 import Hammer from 'hammerjs'
 import moment from 'moment-timezone'
-import VueMoment from 'vue-moment'
 import store from './store'
 import Cookies from 'js-cookie'
 
@@ -27,6 +23,18 @@ import Cookies from 'js-cookie'
 
 import boot from './modules/boot'
 import localization from './modules/localization'
+import {
+  applyLegacyMomentPreferences,
+  createLegacyApolloProvider,
+  createLegacyVuetify,
+  installLegacyPlugins,
+  registerLegacyAppComponents
+} from './modules/vue-legacy-app'
+import { buildLegacyPageMountOptions } from './modules/page-mount-legacy'
+import { createLegacyClientAppOptions } from './modules/app-options-legacy'
+import { mountLegacyVueApp } from './modules/vue-legacy-instance'
+import { legacyVueRegistrationTarget } from './modules/vue-legacy-runtime'
+import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 
 // ====================================
 // Load Helpers
@@ -46,108 +54,11 @@ const getThemeComponentLoader = (componentName) => {
   return loader
 }
 
-const readStringAttribute = (el, name, fallback = '') => {
-  const value = el.getAttribute(name)
-  return value === null ? fallback : value
-}
-
-const readNumberAttribute = (el, name, fallback = 0) => {
-  const value = el.getAttribute(name)
-  return value === null ? fallback : Number(value)
-}
-
-const readBooleanAttribute = (el, name, fallback = false) => {
-  if (!el.hasAttribute(name)) {
-    return fallback
-  }
-
-  const value = el.getAttribute(name)
-  return value === '' || value === 'true'
-}
-
-const readJSONAttribute = (el, name, fallback) => {
-  const value = el.getAttribute(name)
-
-  if (value === null) {
-    return fallback
-  }
-
-  try {
-    return JSON.parse(value)
-  } catch (err) {
-    console.warn(`Unable to parse JSON attribute ${name}.`, err)
-    return fallback
-  }
-}
-
-const buildPageMountOptions = () => {
-  const rootEl = document.getElementById('root')
-  const pageEl = rootEl ? rootEl.querySelector(':scope > page') || rootEl.querySelector('page') : null
-
-  if (!pageEl) {
-    return null
-  }
-
-  const contentsTemplate = pageEl.querySelector('template[slot="contents"]')
-  const commentsTemplate = pageEl.querySelector('template[slot="comments"]')
-
-  const pageProps = {
-    pageId: readNumberAttribute(pageEl, ':page-id'),
-    locale: readStringAttribute(pageEl, 'locale', 'en'),
-    path: readStringAttribute(pageEl, 'path', 'home'),
-    title: readStringAttribute(pageEl, 'title', 'Untitled Page'),
-    description: readStringAttribute(pageEl, 'description'),
-    createdAt: readStringAttribute(pageEl, 'created-at'),
-    updatedAt: readStringAttribute(pageEl, 'updated-at'),
-    tags: readJSONAttribute(pageEl, ':tags', []),
-    authorName: readStringAttribute(pageEl, 'author-name', 'Unknown'),
-    authorId: readNumberAttribute(pageEl, ':author-id'),
-    editor: readStringAttribute(pageEl, 'editor'),
-    isPublished: readBooleanAttribute(pageEl, ':is-published'),
-    toc: readStringAttribute(pageEl, 'toc'),
-    sidebar: readStringAttribute(pageEl, 'sidebar'),
-    navMode: readStringAttribute(pageEl, 'nav-mode', 'MIXED'),
-    commentsEnabled: readBooleanAttribute(pageEl, 'comments-enabled'),
-    effectivePermissions: readStringAttribute(pageEl, 'effective-permissions'),
-    commentsExternal: readBooleanAttribute(pageEl, 'comments-external'),
-    editShortcuts: readStringAttribute(pageEl, 'edit-shortcuts'),
-    filename: readStringAttribute(pageEl, 'filename')
-  }
-
-  return {
-    render(h) {
-      const slotNodes = []
-
-      if (contentsTemplate) {
-        slotNodes.push(h('div', {
-          slot: 'contents',
-          domProps: {
-            innerHTML: contentsTemplate.innerHTML
-          }
-        }))
-      }
-
-      if (commentsTemplate) {
-        slotNodes.push(h('div', {
-          slot: 'comments',
-          domProps: {
-            innerHTML: commentsTemplate.innerHTML
-          }
-        }))
-      }
-
-      return h('Page', {
-        props: pageProps
-      }, slotNodes)
-    }
-  }
-}
-
 // ====================================
 // Initialize Global Vars
 // ====================================
 
-window.WIKI = null
+clearWikiInstance()
 window.boot = boot
 window.Hammer = Hammer
 
@@ -241,51 +152,13 @@ window.graphQL = new ApolloClient({
   connectToDevTools: import.meta.env.DEV
 })
 
-// ====================================
-// Initialize Vue Modules
-// ====================================
-
-Vue.config.productionTip = false
-
-Vue.use(VueRouter)
-Vue.use(VueApollo)
-Vue.use(VueClipboards)
-Vue.use(localization.VueI18Next)
-Vue.use(helpers)
-Vue.use(Vuetify)
-Vue.use(VueMoment, { moment })
-Vue.use(Vuescroll)
-
-Vue.prototype.Velocity = Velocity
-
-// ====================================
-// Register Vue Components
-// ====================================
-
-Vue.component('Admin', () => import(/* webpackChunkName: "admin" */ './components/admin.vue'))
-Vue.component('Comments', () => import(/* webpackChunkName: "comments" */ './components/comments.vue'))
-Vue.component('Editor', () => import(/* webpackPrefetch: -100, webpackChunkName: "editor" */ './components/editor.vue'))
-Vue.component('History', () => import(/* webpackChunkName: "history" */ './components/history.vue'))
-Vue.component('Loader', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/loader.vue'))
-Vue.component('Login', () => import(/* webpackPrefetch: true, webpackChunkName: "login" */ './components/login.vue'))
-Vue.component('NavHeader', () => import(/* webpackMode: "eager" */ './components/common/nav-header.vue'))
-Vue.component('NewPage', () => import(/* webpackChunkName: "new-page" */ './components/new-page.vue'))
-Vue.component('Notify', () => import(/* webpackMode: "eager" */ './components/common/notify.vue'))
-Vue.component('NotFound', () => import(/* webpackChunkName: "not-found" */ './components/not-found.vue'))
-Vue.component('PageSelector', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/page-selector.vue'))
-Vue.component('PageSource', () => import(/* webpackChunkName: "source" */ './components/source.vue'))
-Vue.component('Profile', () => import(/* webpackChunkName: "profile" */ './components/profile.vue'))
-Vue.component('Register', () => import(/* webpackChunkName: "register" */ './components/register.vue'))
-Vue.component('SearchResults', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/search-results.vue'))
-Vue.component('SocialSharing', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/social-sharing.vue'))
-Vue.component('Tags', () => import(/* webpackChunkName: "tags" */ './components/tags.vue'))
-Vue.component('Unauthorized', () => import(/* webpackChunkName: "unauthorized" */ './components/unauthorized.vue'))
-Vue.component('VCardChin', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/v-card-chin.vue'))
-Vue.component('VCardInfo', () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ './components/common/v-card-info.vue'))
-Vue.component('Welcome', () => import(/* webpackChunkName: "welcome" */ './components/welcome.vue'))
-
-Vue.component('NavFooter', () => getThemeComponentLoader('nav-footer')())
-Vue.component('Page', () => getThemeComponentLoader('page')())
+installLegacyPlugins(legacyVueRegistrationTarget, {
+  localization,
+  helpers,
+  moment,
+  velocity: Velocity
+})
+registerLegacyAppComponents(legacyVueRegistrationTarget, getThemeComponentLoader)
 
 let bootstrap = () => {
   // ====================================
@@ -296,9 +169,7 @@ let bootstrap = () => {
     store.commit('loadingStart', 'page-unload')
   })
 
-  const apolloProvider = new VueApollo({
-    defaultClient: window.graphQL
-  })
+  const apolloProvider = createLegacyApolloProvider(window.graphQL)
 
   // ====================================
   // Bootstrap Vue
@@ -311,36 +182,22 @@ let bootstrap = () => {
     darkModeEnabled = (store.get('user/appearance') === 'dark')
   }
 
-  const pageMountOptions = buildPageMountOptions()
-
-  window.WIKI = new Vue({
-    el: '#root',
-    components: {},
-    mixins: [helpers],
-    apolloProvider,
-    store,
-    i18n,
-    vuetify: new Vuetify({
-      rtl: siteConfig.rtl,
-      theme: {
-        dark: darkModeEnabled
-      }
-    }),
-    mounted () {
-      this.$moment.locale(siteConfig.lang)
-      if ((store.get('user/dateFormat') || '').length > 0) {
-        this.$moment.updateLocale(this.$moment.locale(), {
-          longDateFormat: {
-            'L': store.get('user/dateFormat')
-          }
-        })
-      }
-      if ((store.get('user/timezone') || '').length > 0) {
-        this.$moment.tz.setDefault(store.get('user/timezone'))
-      }
-    },
-    ...(pageMountOptions || {})
+  const pageMountOptions = buildLegacyPageMountOptions()
+  const vuetify = createLegacyVuetify({
+    rtl: siteConfig.rtl,
+    dark: darkModeEnabled
   })
+
+  setWikiInstance(mountLegacyVueApp(createLegacyClientAppOptions({
+    apolloProvider,
+    applyLegacyMomentPreferences,
+    helpers,
+    i18n,
+    pageMountOptions,
+    siteConfig,
+    store,
+    vuetify
+  })))
 
   // ----------------------------------
   // Dispatch boot ready

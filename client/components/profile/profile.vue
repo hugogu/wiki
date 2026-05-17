@@ -152,7 +152,8 @@
                   counter='255'
                   loading
                   )
-                  password-strength(slot='progress', v-model='newPass')
+                  template(v-slot:progress)
+                    password-strength(v-model='newPass')
                 v-text-field(
                   ref='iptVerifyPass'
                   v-model='verifyPass'
@@ -318,8 +319,8 @@
             v-toolbar-title
               .subtitle-1 {{$t('profile:groups.title')}}
           v-list(dense)
-            template(v-for='(grp, idx) of user.groups')
-              v-list-item(:key='`grp-id-` + grp')
+            template(v-for='(grp, idx) of user.groups', :key='`grp-id-` + grp')
+              v-list-item
                 v-list-item-avatar(size='32')
                   v-icon mdi-account-group
                 v-list-item-content
@@ -332,11 +333,11 @@
               .subtitle-1 {{$t('profile:activity.title')}}
           v-card-text.grey--text.text--darken-2
             .caption.grey--text {{$t('profile:activity.joinedOn')}}
-            .body-2: strong {{ user.createdAt | moment('LLLL') }}
+            .body-2: strong {{ $formatMoment(user.createdAt, 'LLLL') }}
             .caption.grey--text.mt-3 {{$t('profile:activity.lastUpdatedOn')}}
-            .body-2: strong {{ user.updatedAt | moment('LLLL') }}
+            .body-2: strong {{ $formatMoment(user.updatedAt, 'LLLL') }}
             .caption.grey--text.mt-3 {{$t('profile:activity.lastLoginOn')}}
-            .body-2: strong {{ user.lastLoginAt | moment('LLLL') }}
+            .body-2: strong {{ $formatMoment(user.lastLoginAt, 'LLLL') }}
             v-divider.mt-3
             .caption.grey--text.mt-3 {{$t('profile:activity.pagesCreated')}}
             .body-2: strong {{ user.pagesTotal }}
@@ -350,10 +351,11 @@ import gql from 'graphql-tag'
 import _ from 'lodash'
 import Cookies from 'js-cookie'
 import validate from 'validate.js'
+import { getWikiInstance } from '../../modules/wiki-instance'
 
 import PasswordStrength from '../common/password-strength.vue'
 
-/* global WIKI, siteConfig */
+/* global siteConfig */
 
 export default {
   i18nOptions: {
@@ -686,17 +688,25 @@ export default {
   },
   watch: {
     'user.appearance': (newValue, oldValue) => {
+      const wiki = getWikiInstance()
+      if (!wiki) {
+        return
+      }
       if (newValue === '') {
-        WIKI.$vuetify.theme.dark = siteConfig.darkMode
+        wiki.$vuetify.theme.dark = siteConfig.darkMode
       } else {
-        WIKI.$vuetify.theme.dark = (newValue === 'dark')
+        wiki.$vuetify.theme.dark = (newValue === 'dark')
       }
     },
     'user.dateFormat': (newValue, oldValue) => {
+      const wiki = getWikiInstance()
+      if (!wiki) {
+        return
+      }
       if (newValue === '') {
-        WIKI.$moment.updateLocale(WIKI.$moment.locale(), null)
+        wiki.$moment.updateLocale(wiki.$moment.locale(), null)
       } else {
-        WIKI.$moment.updateLocale(WIKI.$moment.locale(), {
+        wiki.$moment.updateLocale(wiki.$moment.locale(), {
           longDateFormat: {
             'L': newValue
           }
@@ -704,10 +714,14 @@ export default {
       }
     },
     'user.timezone': (newValue, oldValue) => {
+      const wiki = getWikiInstance()
+      if (!wiki) {
+        return
+      }
       if (newValue === '') {
-        WIKI.$moment.tz.setDefault()
+        wiki.$moment.tz.setDefault()
       } else {
-        WIKI.$moment.tz.setDefault(newValue)
+        wiki.$moment.tz.setDefault(newValue)
       }
     }
   },

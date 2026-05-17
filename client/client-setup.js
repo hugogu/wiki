@@ -1,22 +1,24 @@
 /* eslint-disable import/first */
-import Vue from 'vue'
-import Vuetify from 'vuetify'
+import './modules/vue-compat'
 import 'vuetify/dist/vuetify.min.css'
 import boot from './modules/boot'
+import { createLegacySetupAppOptions } from './modules/app-options-legacy'
+import { createLegacyVuetify, installLegacySetupPlugins, registerLegacySetupComponents } from './modules/vue-legacy-app'
+import { mountLegacyVueApp } from './modules/vue-legacy-instance'
+import { legacyVueRegistrationTarget } from './modules/vue-legacy-runtime'
+import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 /* eslint-enable import/first */
 
-window.WIKI = null
+clearWikiInstance()
 window.boot = boot
 
-Vue.use(Vuetify)
-
-Vue.component('setup', () => import(/* webpackMode: "eager" */ './components/setup.vue'))
+installLegacySetupPlugins(legacyVueRegistrationTarget)
+registerLegacySetupComponents(legacyVueRegistrationTarget)
 
 let bootstrap = () => {
-  window.WIKI = new Vue({
-    el: '#root',
-    vuetify: new Vuetify()
-  })
+  setWikiInstance(mountLegacyVueApp(createLegacySetupAppOptions({
+    vuetify: createLegacyVuetify()
+  })))
 }
 
 window.boot.onDOMReady(bootstrap)

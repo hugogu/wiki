@@ -27,7 +27,7 @@
                     persistent-hint
                     :hint='$t(`admin:theme.siteThemeHint`)'
                     )
-                    template(slot='item', slot-scope='data')
+                    template(v-slot:item='data')
                       v-list-item-avatar
                         v-icon.blue--text(dark) mdi-image-filter-frames
                       v-list-item-content
@@ -131,6 +131,7 @@
 <script>
 import _ from 'lodash'
 import { sync } from 'vuex-pathify'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 import themeConfigQuery from 'gql/admin/theme/theme-query-config.gql'
 import themeSaveMutation from 'gql/admin/theme/theme-mutation-save.gql'
@@ -198,11 +199,12 @@ export default {
   mounted() {
     this.darkModeInitial = this.darkMode
   },
-  beforeDestroy() {
-    this.darkMode = this.darkModeInitial
-    this.$vuetify.theme.dark = this.darkModeInitial
-  },
+  ...createCompatUnmountHooks('restoreDarkMode'),
   methods: {
+    restoreDarkMode() {
+      this.darkMode = this.darkModeInitial
+      this.$vuetify.theme.dark = this.darkModeInitial
+    },
     async save () {
       this.loading = true
       this.$store.commit(`loadingStart`, 'admin-theme-save')

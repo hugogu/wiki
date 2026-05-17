@@ -1,5 +1,7 @@
 import filesize from 'filesize.js'
 import _ from 'lodash'
+import moment from 'moment-timezone'
+import { assignGlobalProperties, defineGlobalProperties } from '../modules/vue-global-registry'
 
 /* global siteConfig */
 
@@ -11,6 +13,47 @@ const helpers = {
    */
   filesize (rawSize) {
     return _.toUpper(filesize(rawSize))
+  },
+  prettyBytes (rawSize) {
+    if (typeof rawSize !== 'number' || isNaN(rawSize)) {
+      throw new TypeError('Expected a number')
+    }
+
+    let num = rawSize
+    const neg = num < 0
+    const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    if (neg) {
+      num = -num
+    }
+    if (num < 1) {
+      return `${neg ? '-' : ''}${num} B`
+    }
+
+    const exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1)
+    const value = (num / Math.pow(1000, exponent)).toFixed(2) * 1
+    const unit = units[exponent]
+
+    return `${neg ? '-' : ''}${value} ${unit}`
+  },
+  initials (value = '') {
+    return String(value).split(' ').map(v => v.substring(0, 1)).join('')
+  },
+  formatMoment (value, format = 'LLL') {
+    const date = moment(value)
+
+    if (!date.isValid()) {
+      return ''
+    }
+
+    switch (format) {
+      case 'calendar':
+        return date.calendar()
+      case 'from':
+        return date.fromNow()
+      default:
+        return date.format(format)
+    }
   },
   /**
    * Convert raw path to safe path
@@ -53,14 +96,23 @@ const helpers = {
 }
 
 export default {
-  install(Vue) {
-    Vue.$helpers = helpers
-    Object.defineProperties(Vue.prototype, {
+  install(appOrVue) {
+    const descriptors = {
       $helpers: {
         get() {
           return helpers
         }
+      },
+      $formatMoment: {
+        get() {
+          return helpers.formatMoment
+        }
       }
+    }
+
+    assignGlobalProperties(appOrVue, {
+      $helpers: helpers
     })
+    defineGlobalProperties(appOrVue, descriptors)
   }
 }

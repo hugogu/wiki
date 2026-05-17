@@ -12,7 +12,7 @@
       v-btn.mx-0(
         outlined
         dark
-        @click.native='close'
+        @click='close'
         )
         v-icon(left) mdi-check
         span {{ $t('common:actions.ok') }}
@@ -88,7 +88,8 @@
               :loading='$apollo.queries.newTagSuggestions.loading'
               persistent-hint
               hide-no-data
-              :search-input.sync='newTagSearch'
+              :search-input='newTagSearch'
+              @update:search-input='newTagSearch = $event'
               )
         v-tab-item(transition='fade-transition', reverse-transition='fade-transition')
           v-card-text
@@ -110,7 +111,8 @@
                     ref='menuPublishStart'
                     :close-on-content-click='false'
                     v-model='isPublishStartShown'
-                    :return-value.sync='publishStartDate'
+                    :return-value='publishStartDate'
+                    @update:return-value='publishStartDate = $event'
                     width='460px'
                     :disabled='!isPublished'
                     )
@@ -151,7 +153,8 @@
                     ref='menuPublishEnd'
                     :close-on-content-click='false'
                     v-model='isPublishEndShown'
-                    :return-value.sync='publishEndDate'
+                    :return-value='publishEndDate'
+                    @update:return-value='publishEndDate = $event'
                     width='460px'
                     :disabled='!isPublished'
                     )
@@ -248,6 +251,7 @@
 import _ from 'lodash'
 import { sync, get } from 'vuex-pathify'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
@@ -259,6 +263,9 @@ const filenamePattern = /^(?![\#\/\.\$\^\=\*\;\:\&\?\(\)\[\]\{\}\"\'\>\<\,\@\!\%
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -284,9 +291,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     mode: get('editor/mode'),
     title: sync('page/title'),
@@ -306,7 +316,7 @@ export default {
     }
   },
   watch: {
-    value (newValue, oldValue) {
+    dialogValue (newValue, oldValue) {
       if (newValue) {
         _.delay(() => {
           this.$refs.iptTitle.focus()
@@ -411,7 +421,7 @@ export default {
       fetchPolicy: 'cache-first',
       update: (data) => _.get(data, 'pages.searchTags', []),
       skip () {
-        return !this.value || _.isEmpty(this.newTagSearch)
+        return !this.dialogValue || _.isEmpty(this.newTagSearch)
       },
       throttle: 500
     }

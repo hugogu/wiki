@@ -14,10 +14,9 @@
           v-card.md2(flat, :class='$vuetify.theme.dark ? "grey darken-3-d5" : "grey lighten-5"')
             .overline.px-5.pt-5.pb-3.grey--text.text--darken-2 {{pmGroup.category}}
             v-card-text.pt-0
-              template(v-for='(pm, idx) in pmGroup.items')
+              template(v-for='(pm, idx) in pmGroup.items', :key='pm.permission')
                 v-checkbox.pt-0(
                   style='justify-content: space-between;'
-                  :key='pm.permission'
                   :label='pm.permission'
                   :hint='pm.hint'
                   persistent-hint
@@ -31,8 +30,13 @@
 </template>
 
 <script>
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
+
 export default {
   props: {
+    modelValue: {
+      type: Object
+    },
     value: {
       type: Object,
       default: () => ({})
@@ -215,9 +219,12 @@ export default {
     }
   },
   computed: {
+    groupValue () {
+      return getCompatModelValue(this)
+    },
     group: {
-      get() { return this.value },
-      set(val) { this.$set('input', val) }
+      get() { return this.groupValue },
+      set(val) { emitCompatModelValue(this, val) }
     }
   }
 }

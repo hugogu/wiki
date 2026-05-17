@@ -9,6 +9,8 @@
 
 <script>
 import { sync, get } from 'vuex-pathify'
+import { EDITOR_EVENTS, emitEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 // const xmlTest = `<?xml version="1.0" encoding="UTF-8"?>
 // <mxfile version="13.4.2">
@@ -37,12 +39,15 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    disposeMessageListener () {
+      window.removeEventListener('message', this.receive)
+    },
     close () {
       this.activeModal = ''
     },
     overwriteAndClose() {
-      this.$root.$emit('overwriteEditorContent')
-      this.$root.$emit('resetEditorConflict')
+      emitEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT)
+      emitEditorEvent(EDITOR_EVENTS.RESET_CONFLICT)
       this.close()
     },
     send (msg) {
@@ -77,7 +82,7 @@ export default {
           }
           case 'export': {
             const svgDataStart = msg.data.indexOf('base64,') + 7
-            this.$root.$emit('editorInsert', {
+            emitEditorEvent(EDITOR_EVENTS.INSERT, {
               kind: 'DIAGRAM',
               text: msg.data.slice(svgDataStart)
               // text: msg.xml.replace(/ agent="(.*?)"/, '').replace(/ host="(.*?)"/, '').replace(/ etag="(.*?)"/, '')
@@ -98,9 +103,7 @@ export default {
   async mounted () {
     window.addEventListener('message', this.receive)
   },
-  beforeDestroy () {
-    window.removeEventListener('message', this.receive)
-  }
+  ...createCompatUnmountHooks('disposeMessageListener')
 }
 </script>
 

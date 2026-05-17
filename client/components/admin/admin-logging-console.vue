@@ -25,6 +25,7 @@
 import _ from 'lodash'
 // import { Terminal } from 'xterm'
 // import * as fit from 'xterm/lib/addons/fit/fit'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import livetrailSubscription from 'gql/admin/logging/logging-subscription-livetrail.gql'
 
@@ -33,19 +34,25 @@ import livetrailSubscription from 'gql/admin/logging/logging-subscription-livetr
 export default {
   term: null,
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     }
   },
   watch: {
-    value(newValue, oldValue) {
+    dialogValue(newValue, oldValue) {
       if (newValue) {
         _.delay(() => {
           // this.term = new Terminal()

@@ -10,7 +10,7 @@
       v-card-text.pt-4
         i18next.body-2(tag='div', path='editor:conflict.infoGeneric')
           strong(place='authorName') {{latest.authorName}}
-          span(place='date', :title='$options.filters.moment(latest.updatedAt, `LLL`)') {{ latest.updatedAt | moment('from') }}.
+          span(place='date', :title='$formatMoment(latest.updatedAt, `LLL`)') {{ $formatMoment(latest.updatedAt, 'from') }}.
         v-btn.mt-2(outlined, color='indigo', small, :href='`/` + latest.locale + `/` + latest.path', target='_blank')
           v-icon(left) mdi-open-in-new
           span {{$t('editor:conflict.viewLatestVersion')}}
@@ -51,9 +51,14 @@
 <script>
 import _ from 'lodash'
 import gql from 'graphql-tag'
+import { EDITOR_EVENTS, emitEditorEvent } from '../../../modules/editor-events'
+import { emitCompatModelValue, getCompatModelValue } from '../../../modules/vue-model-compat'
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -72,9 +77,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     }
   },
   methods: {
@@ -83,14 +91,14 @@ export default {
     },
     useLocal () {
       this.$store.set('editor/checkoutDateActive', this.latest.updatedAt)
-      this.$root.$emit('resetEditorConflict')
+      emitEditorEvent(EDITOR_EVENTS.RESET_CONFLICT)
       this.close()
     },
     useRemote () {
       this.$store.set('editor/checkoutDateActive', this.latest.updatedAt)
       this.$store.set('editor/content', this.latest.content)
-      this.$root.$emit('overwriteEditorContent')
-      this.$root.$emit('resetEditorConflict')
+      emitEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT)
+      emitEditorEvent(EDITOR_EVENTS.RESET_CONFLICT)
       this.close()
     }
   },

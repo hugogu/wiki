@@ -40,7 +40,7 @@
             :items='breadcrumbs'
             divider='/'
             )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               v-icon(v-if='props.item.path === "/"', small, @click='goHome') mdi-home
               v-btn.ma-0(v-else, :href='props.item.path', small, text) {{props.item.name}}
           template(v-if='!isPublished')
@@ -180,7 +180,7 @@
                         v-icon(color='indigo', dense) mdi-history
                     span {{$t('common:header.history')}}
                 .page-author-card-name.body-2.grey--text(:class='$vuetify.theme.dark ? `` : `text--darken-3`') {{ authorName }}
-                .page-author-card-date.caption.grey--text.text--darken-1 {{ updatedAt | moment('calendar') }}
+                .page-author-card-date.caption.grey--text.text--darken-1 {{ $formatMoment(updatedAt, 'calendar') }}
 
             //- v-card.mb-5
             //-   .pa-5
@@ -369,12 +369,10 @@ import mermaid from 'mermaid'
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import ClipboardJS from 'clipboard'
-import Vue from 'vue'
 import { Base64 } from 'js-base64'
+import { emitPageEvent, PAGE_EVENTS } from '../../../modules/page-events'
 
 /* global siteLangs */
-
-Vue.component('Tabset', Tabset)
 
 const decodeBase64JSON = (value, fallback = null) => {
   if (!value) {
@@ -459,7 +457,8 @@ Prism.plugins.toolbar.registerButton('copy-to-clipboard', (env) => {
 export default {
   components: {
     NavSidebar,
-    StatusIndicator
+    StatusIndicator,
+    Tabset
   },
   props: {
     pageId: {
@@ -738,25 +737,25 @@ export default {
       }
     },
     pageEdit () {
-      this.$root.$emit('pageEdit')
+      emitPageEvent(PAGE_EVENTS.EDIT)
     },
     pageHistory () {
-      this.$root.$emit('pageHistory')
+      emitPageEvent(PAGE_EVENTS.HISTORY)
     },
     pageSource () {
-      this.$root.$emit('pageSource')
+      emitPageEvent(PAGE_EVENTS.SOURCE)
     },
     pageConvert () {
-      this.$root.$emit('pageConvert')
+      emitPageEvent(PAGE_EVENTS.CONVERT)
     },
     pageDuplicate () {
-      this.$root.$emit('pageDuplicate')
+      emitPageEvent(PAGE_EVENTS.DUPLICATE)
     },
     pageMove () {
-      this.$root.$emit('pageMove')
+      emitPageEvent(PAGE_EVENTS.MOVE)
     },
     pageDelete () {
-      this.$root.$emit('pageDelete')
+      emitPageEvent(PAGE_EVENTS.DELETE)
     },
     handleSideNavVisibility () {
       if (window.innerWidth === this.winWidth) { return }

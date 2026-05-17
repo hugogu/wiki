@@ -194,8 +194,8 @@
             v-icon.mr-2 mdi-account-group
             span {{$t('admin:users.groups')}}
           v-list(dense)
-            template(v-for='(group, idx) in user.groups')
-              v-list-item(:key='`group-` + group.id')
+            template(v-for='(group, idx) in user.groups', :key='`group-` + group.id')
+              v-list-item
                 v-list-item-avatar(size='32')
                   v-icon mdi-account-group-outline
                 v-list-item-content
@@ -331,11 +331,11 @@
               .subtitle-1 {{$t('profile:activity.title')}}
           v-card-text.grey--text.text--darken-2
             .caption.grey--text {{$t('profile:activity.joinedOn')}}
-            .body-2: strong {{ user.createdAt | moment('LLLL') }}
+            .body-2: strong {{ $formatMoment(user.createdAt, 'LLLL') }}
             .caption.grey--text.mt-3 {{$t('profile:activity.lastUpdatedOn')}}
-            .body-2: strong {{ user.updatedAt | moment('LLLL') }}
+            .body-2: strong {{ $formatMoment(user.updatedAt, 'LLLL') }}
             .caption.grey--text.mt-3 {{$t('profile:activity.lastLoginOn')}}
-            .body-2: strong {{ user.lastLoginAt | moment('LLLL') }}
+            .body-2: strong {{ $formatMoment(user.lastLoginAt, 'LLLL') }}
 
         //- v-card.mt-3.animated.fadeInUp.wait-p6s
         //-   v-toolbar(color='teal', dense, dark, flat)

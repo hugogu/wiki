@@ -15,7 +15,8 @@
           v-data-table(
             :items='pages'
             :headers='headers'
-            :page.sync='pagination'
+            :page='pagination'
+            @update:page='pagination = $event'
             :items-per-page='15'
             :loading='loading'
             must-sort,
@@ -23,7 +24,7 @@
             sort-desc,
             hide-default-footer
           )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               tr.is-clickable(:active='props.selected', @click='goToPage(props.item.id)')
                 td
                   .body-2: strong {{ props.item.title }}
@@ -31,9 +32,9 @@
                 td.admin-pages-path
                   v-chip(label, small, :color='$vuetify.theme.dark ? `grey darken-4` : `grey lighten-4`') {{ props.item.locale }}
                   span.ml-2.grey--text(:class='$vuetify.theme.dark ? `text--lighten-1` : `text--darken-2`') / {{ props.item.path }}
-                td {{ props.item.createdAt | moment('calendar') }}
-                td {{ props.item.updatedAt | moment('calendar') }}
-            template(slot='no-data')
+                td {{ $formatMoment(props.item.createdAt, 'calendar') }}
+                td {{ $formatMoment(props.item.updatedAt, 'calendar') }}
+            template(v-slot:no-data)
               v-alert.ma-3(icon='mdi-alert', :value='true', outlined, color='grey')
                 em.caption {{$t('profile:pages.emptyList')}}
           .text-center.py-2.animated.fadeInDown(v-if='this.pageTotal > 1')

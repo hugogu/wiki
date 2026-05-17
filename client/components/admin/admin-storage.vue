@@ -21,8 +21,8 @@
           v-toolbar(flat, color='primary', dark, dense)
             .subtitle-1 {{$t('admin:storage.targets')}}
           v-list(two-line, dense).py-0
-            template(v-for='(tgt, idx) in targets')
-              v-list-item(:key='tgt.key', @click='selectedTarget = tgt.key', :disabled='!tgt.isAvailable')
+            template(v-for='(tgt, idx) in targets', :key='tgt.key')
+              v-list-item(@click='selectedTarget = tgt.key', :disabled='!tgt.isAvailable')
                 v-list-item-avatar(size='24')
                   v-icon(color='grey', v-if='!tgt.isAvailable') mdi-minus-box-outline
                   v-icon(color='primary', v-else-if='tgt.isEnabled', v-ripple, @click='tgt.key !== `local` && (tgt.isEnabled = false)') mdi-checkbox-marked-outline
@@ -44,8 +44,8 @@
               color='#FFF'
             )
           v-list.py-0(two-line, dense)
-            template(v-for='(tgt, n) in status')
-              v-list-item(:key='tgt.key')
+            template(v-for='(tgt, n) in status', :key='tgt.key')
+              v-list-item
                 template(v-if='tgt.status === `pending`')
                   v-list-item-avatar(color='purple')
                     v-icon(color='white') mdi-clock-outline
@@ -59,13 +59,13 @@
                     v-icon(color='white') mdi-check-circle
                   v-list-item-content
                     v-list-item-title.body-2 {{tgt.title}}
-                    v-list-item-subtitle.green--text.caption {{$t('admin:storage.lastSync', { time: $options.filters.moment(tgt.lastAttempt, 'from') })}}
+                    v-list-item-subtitle.green--text.caption {{$t('admin:storage.lastSync', { time: $formatMoment(tgt.lastAttempt, 'from') })}}
                 template(v-else)
                   v-list-item-avatar(color='red')
                     v-icon(color='white') mdi-close-circle-outline
                   v-list-item-content
                     v-list-item-title.body-2 {{tgt.title}}
-                    v-list-item-subtitle.red--text.caption {{$t('admin:storage.lastSyncAttempt', { time: $options.filters.moment(tgt.lastAttempt, 'from') })}}
+                    v-list-item-subtitle.red--text.caption {{$t('admin:storage.lastSyncAttempt', { time: $formatMoment(tgt.lastAttempt, 'from') })}}
                   v-list-item-action
                     v-menu
                       template(v-slot:activator='{ on }')
@@ -237,9 +237,6 @@ export default {
   components: {
     DurationPicker,
     LoopingRhombusesSpinner
-  },
-  filters: {
-    startCase(val) { return _.startCase(val) }
   },
   data() {
     return {

@@ -1,7 +1,7 @@
 <template lang="pug">
   v-app.editor(:dark='$vuetify.theme.dark')
     nav-header(dense)
-      template(slot='mid')
+      template(v-slot:mid)
         v-text-field.editor-title-input(
           dark
           solo
@@ -12,7 +12,7 @@
           dense
           full-width
         )
-      template(slot='actions')
+      template(v-slot:actions)
         v-btn.mr-3.animated.fadeIn(color='amber', outlined, small, v-if='isConflict', @click='openConflict')
           .overline.amber--text.mr-3 Conflict
           status-indicator(intermediary, pulse)
@@ -63,11 +63,14 @@ import { AtomSpinner } from 'epic-spinners'
 import { Base64 } from 'js-base64'
 import { StatusIndicator } from 'vue-status-indicator'
 
+import { emitEditorEvent, EDITOR_EVENTS, onEditorEvent } from '../modules/editor-events'
+import { ensureLegacyStoreModule } from '../modules/store-legacy'
+import { createCompatUnmountHooks } from '../modules/vue-unmount-bridge'
+import { defineCompatAsyncComponent } from '../modules/vue-async-component'
+import store from '../store'
 import editorStore from '../store/editor'
 
-/* global WIKI */
-
-WIKI.$store.registerModule('editor', editorStore)
+ensureLegacyStoreModule(store, 'editor', editorStore)
 
 const decodeBase64JSON = (value, fallback = null) => {
   if (!value) {
@@ -82,19 +85,19 @@ export default {
   components: {
     AtomSpinner,
     StatusIndicator,
-    editorApi: () => import('./editor/editor-api.vue'),
-    editorCode: () => import('./editor/editor-code.vue'),
-    editorCkeditor: () => import('./editor/editor-ckeditor.vue'),
-    editorAsciidoc: () => import('./editor/editor-asciidoc.vue'),
-    editorMarkdown: () => import('./editor/editor-markdown.vue'),
-    editorRedirect: () => import('./editor/editor-redirect.vue'),
-    editorModalEditorselect: () => import('./editor/editor-modal-editorselect.vue'),
-    editorModalProperties: () => import('./editor/editor-modal-properties.vue'),
-    editorModalUnsaved: () => import('./editor/editor-modal-unsaved.vue'),
-    editorModalMedia: () => import('./editor/editor-modal-media.vue'),
-    editorModalBlocks: () => import('./editor/editor-modal-blocks.vue'),
-    editorModalConflict: () => import('./editor/editor-modal-conflict.vue'),
-    editorModalDrawio: () => import('./editor/editor-modal-drawio.vue')
+    editorApi: defineCompatAsyncComponent(() => import('./editor/editor-api.vue')),
+    editorCode: defineCompatAsyncComponent(() => import('./editor/editor-code.vue')),
+    editorCkeditor: defineCompatAsyncComponent(() => import('./editor/editor-ckeditor.vue')),
+    editorAsciidoc: defineCompatAsyncComponent(() => import('./editor/editor-asciidoc.vue')),
+    editorMarkdown: defineCompatAsyncComponent(() => import('./editor/editor-markdown.vue')),
+    editorRedirect: defineCompatAsyncComponent(() => import('./editor/editor-redirect.vue')),
+    editorModalEditorselect: defineCompatAsyncComponent(() => import('./editor/editor-modal-editorselect.vue')),
+    editorModalProperties: defineCompatAsyncComponent(() => import('./editor/editor-modal-properties.vue')),
+    editorModalUnsaved: defineCompatAsyncComponent(() => import('./editor/editor-modal-unsaved.vue')),
+    editorModalMedia: defineCompatAsyncComponent(() => import('./editor/editor-modal-media.vue')),
+    editorModalBlocks: defineCompatAsyncComponent(() => import('./editor/editor-modal-blocks.vue')),
+    editorModalConflict: defineCompatAsyncComponent(() => import('./editor/editor-modal-conflict.vue')),
+    editorModalDrawio: defineCompatAsyncComponent(() => import('./editor/editor-modal-drawio.vue'))
   },
   props: {
     locale: {
@@ -262,14 +265,23 @@ export default {
       }
     }
 
-    this.$root.$on('resetEditorConflict', () => {
-      this.isConflict = false
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.RESET_CONFLICT, () => {
+        this.isConflict = false
+      })
+    ]
 
     // this.$store.set('editor/mode', 'edit')
     // this.currentEditor = `editorApi`
   },
+  ...createCompatUnmountHooks('disposeEditorEvents'),
   methods: {
+    disposeEditorEvents () {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     openPropsModal(name) {
       this.dialogProps = true
     },
@@ -280,7 +292,7 @@ export default {
       this.dialogProgress = false
     },
     openConflict() {
-      this.$root.$emit('saveConflict')
+      emitEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT)
     },
     async save({ rethrow = false, overwrite = false } = {}) {
       this.showProgressDialog('saving')
@@ -395,7 +407,7 @@ export default {
             }
           })
           if (_.get(conflictResp, 'data.pages.checkConflicts', false)) {
-            this.$root.$emit('saveConflict')
+            emitEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT)
             throw new Error(this.$t('editor:conflict.warning'))
           }
 

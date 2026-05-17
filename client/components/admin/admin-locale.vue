@@ -31,7 +31,7 @@
                     persistent-hint
                     :hint='$t("admin:locale.base.hint")'
                   )
-                    template(slot='item', slot-scope='data')
+                    template(v-slot:item='data')
                       template(v-if='typeof data.item !== "object"')
                         v-list-item-content(v-text='data.item')
                       template(v-else)
@@ -87,7 +87,7 @@
                     small-chips
                     :hint='$t("admin:locale.activeNamespaces.hint")'
                     )
-                    template(slot='item', slot-scope='data')
+                    template(v-slot:item='data')
                       template(v-if='typeof data.item !== "object"')
                         v-list-item-content(v-text='data.item')
                       template(v-else)
@@ -139,8 +139,7 @@
 
 <script>
 import _ from 'lodash'
-
-/* global WIKI */
+import { getWikiInstance } from '../../modules/wiki-instance'
 
 import localesQuery from 'gql/admin/locale/locale-query-list.gql'
 import localesDownloadMutation from 'gql/admin/locale/locale-mutation-download.gql'
@@ -245,9 +244,13 @@ export default {
       })
       const resp = _.get(respRaw, 'data.localization.updateLocale.responseResult', {})
       if (resp.succeeded) {
+        const wiki = getWikiInstance()
+
         // Change UI language
-        WIKI.$i18n.i18next.changeLanguage(this.selectedLocale)
-        WIKI.$moment.locale(this.selectedLocale)
+        if (wiki) {
+          wiki.$i18n.i18next.changeLanguage(this.selectedLocale)
+          wiki.$moment.locale(this.selectedLocale)
+        }
 
         // Check for RTL
         const curLocale = _.find(this.locales, ['code', this.selectedLocale])

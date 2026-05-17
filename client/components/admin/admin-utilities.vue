@@ -13,8 +13,8 @@
           v-toolbar(flat, color='primary', dark, dense)
             .subtitle-1 {{$t('admin:utilities.tools')}}
           v-list(two-line, dense).py-0
-            template(v-for='(tool, idx) in tools')
-              v-list-item(:key='tool.key', @click='selectedTool = tool.key', :disabled='!tool.isAvailable')
+            template(v-for='(tool, idx) in tools', :key='tool.key')
+              v-list-item(@click='selectedTool = tool.key', :disabled='!tool.isAvailable')
                 v-list-item-avatar
                   v-icon(:color='!tool.isAvailable ? `grey lighten-1` : (selectedTool === tool.key ? `blue ` : `grey darken-1`)') {{ tool.icon }}
                 v-list-item-content
@@ -32,14 +32,16 @@
 
 <script>
 
+import { defineCompatAsyncComponent } from '../../modules/vue-async-component'
+
 export default {
   components: {
-    UtilityAuth: () => import(/* webpackChunkName: "admin" */ './admin-utilities-auth.vue'),
-    UtilityContent: () => import(/* webpackChunkName: "admin" */ './admin-utilities-content.vue'),
-    UtilityCache: () => import(/* webpackChunkName: "admin" */ './admin-utilities-cache.vue'),
-    UtilityExport: () => import(/* webpackChunkName: "admin" */ './admin-utilities-export.vue'),
-    UtilityImportv1: () => import(/* webpackChunkName: "admin" */ './admin-utilities-importv1.vue'),
-    UtilityTelemetry: () => import(/* webpackChunkName: "admin" */ './admin-utilities-telemetry.vue')
+    UtilityAuth: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-auth.vue')),
+    UtilityContent: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-content.vue')),
+    UtilityCache: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-cache.vue')),
+    UtilityExport: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-export.vue')),
+    UtilityImportv1: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-importv1.vue')),
+    UtilityTelemetry: defineCompatAsyncComponent(() => import(/* webpackChunkName: "admin" */ './admin-utilities-telemetry.vue'))
   },
   data() {
     return {

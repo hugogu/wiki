@@ -39,26 +39,27 @@
             :items='groups'
             :headers='headers'
             :search='search'
-            :page.sync='pagination'
+            :page='pagination'
+            @update:page='pagination = $event'
             :items-per-page='15'
             :loading='loading'
             @page-count='pageCount = $event'
             must-sort,
             hide-default-footer
           )
-            template(slot='item', slot-scope='props')
+            template(v-slot:item='props')
               tr.is-clickable(:active='props.selected', @click='$router.push("/groups/" + props.item.id)')
                 td {{ props.item.id }}
                 td: strong {{ props.item.name }}
                 td {{ props.item.userCount }}
-                td {{ props.item.createdAt | moment('calendar') }}
-                td {{ props.item.updatedAt | moment('calendar') }}
+                td {{ $formatMoment(props.item.createdAt, 'calendar') }}
+                td {{ $formatMoment(props.item.updatedAt, 'calendar') }}
                 td
                   v-tooltip(left, v-if='props.item.isSystem')
                     template(v-slot:activator='{ on }')
                       v-icon(v-on='on') mdi-lock-outline
                     span System Group
-            template(slot='no-data')
+            template(v-slot:no-data)
               v-alert.ma-3(icon='mdi-alert', :value='true', outline) No groups to display.
           .text-xs-center.py-2(v-if='pageCount > 1')
             v-pagination(v-model='pagination', :length='pageCount')

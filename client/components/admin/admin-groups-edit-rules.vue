@@ -78,10 +78,10 @@
               clearable
               dense
               )
-              template(slot='selection', slot-scope='{ item, index }')
+              template(v-slot:selection='{ item, index }')
                 v-chip.white--text.ml-0(v-if='index <= 1', small, label, :color='rule.deny ? `red` : `green`').caption {{ item.value }}
                 v-chip.white--text.ml-0(v-if='index === 2', small, label, :color='rule.deny ? `red lighten-2` : `green lighten-2`').caption + {{ rule.roles.length - 2 }} more
-              template(slot='item', slot-scope='props')
+              template(v-slot:item='props')
                 v-list-item-action(style='min-width: 30px;')
                   v-checkbox(
                     v-model='props.attrs.inputValue'
@@ -104,9 +104,9 @@
               style='flex: 0 1 250px;'
               dense
               )
-              template(slot='selection', slot-scope='{ item, index }')
+              template(v-slot:selection='{ item, index }')
                 .body-2 {{item.text}}
-              template(slot='item', slot-scope='data')
+              template(v-slot:item='data')
                 v-list-item-avatar
                   v-avatar.white--text.radius-4(color='blue', size='30', tile) {{ data.item.icon }}
                 v-list-item-content
@@ -127,22 +127,23 @@
               :menu-props='{ "minWidth": 250 }'
               style='flex: 0 1 150px;'
               )
-              template(slot='selection', slot-scope='{ item, index }')
+              template(v-slot:selection='{ item, index }')
                 v-chip.white--text.ml-0(v-if='rule.locales.length === 1', small, label, :color='rule.deny ? `red` : `green`').caption {{ item.code.toUpperCase() }}
                 v-chip.white--text.ml-0(v-else-if='index === 0', small, label, :color='rule.deny ? `red` : `green`').caption {{ rule.locales.length }} locales
-              v-list-item(slot='prepend-item', @click='rule.locales = []')
-                v-list-item-action(style='min-width: 30px;')
-                  v-checkbox(
-                    :input-value='rule.locales.length === 0'
-                    hide-details
-                    color='primary'
-                    readonly
-                  )
-                v-icon.mr-2(:color='rule.deny ? `red` : `green`') mdi-earth
-                v-list-item-content
-                  v-list-item-title.body-2 Any Locale
-              v-divider(slot='prepend-item')
-              template(slot='item', slot-scope='props')
+              template(v-slot:prepend-item)
+                v-list-item(@click='rule.locales = []')
+                  v-list-item-action(style='min-width: 30px;')
+                    v-checkbox(
+                      :input-value='rule.locales.length === 0'
+                      hide-details
+                      color='primary'
+                      readonly
+                    )
+                  v-icon.mr-2(:color='rule.deny ? `red` : `green`') mdi-earth
+                  v-list-item-content
+                    v-list-item-title.body-2 Any Locale
+                v-divider
+              template(v-slot:item='props')
                 v-list-item-action(style='min-width: 30px;')
                   v-checkbox(
                     v-model='props.attrs.inputValue'
@@ -198,6 +199,7 @@
 <script>
 import _ from 'lodash'
 import { customAlphabet } from 'nanoid/non-secure'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 /* global siteLangs */
 
@@ -205,6 +207,9 @@ const nanoid = customAlphabet('1234567890abcdef', 10)
 
 export default {
   props: {
+    modelValue: {
+      type: Object
+    },
     value: {
       type: Object,
       default: () => ({})
@@ -238,9 +243,12 @@ export default {
     }
   },
   computed: {
+    groupValue () {
+      return getCompatModelValue(this)
+    },
     group: {
-      get() { return this.value },
-      set(val) { this.$set('input', val) }
+      get() { return this.groupValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     locales() { return siteLangs }
   },

@@ -48,12 +48,12 @@
       v-row.grey.lighten-2.body-2(no-gutters)
         v-col.px-4.py-2
           i18next.grey--text.text--darken-2(tag='em', path='editor:conflict.leftPanelInfo')
-            span(place='date', :title='$options.filters.moment(checkoutDateActive, `LLL`)') {{ checkoutDateActive | moment('from') }}
+            span(place='date', :title='$formatMoment(checkoutDateActive, `LLL`)') {{ $formatMoment(checkoutDateActive, 'from') }}
         v-divider(vertical)
         v-col.px-4.py-2
           i18next.grey--text.text--darken-2(tag='em', path='editor:conflict.rightPanelInfo')
             strong(place='authorName') {{latest.authorName}}
-            span(place='date', :title='$options.filters.moment(latest.updatedAt, `LLL`)') {{ latest.updatedAt | moment('from') }}
+            span(place='date', :title='$formatMoment(latest.updatedAt, `LLL`)') {{ $formatMoment(latest.updatedAt, 'from') }}
       v-row.grey.lighten-3.grey--text.text--darken-3(no-gutters)
         v-col.pa-4
           .body-2
@@ -78,6 +78,7 @@
 import _ from 'lodash'
 import gql from 'graphql-tag'
 import { sync, get } from 'vuex-pathify'
+import { EDITOR_EVENTS, emitEditorEvent } from '../../modules/editor-events'
 
 /* global siteConfig */
 
@@ -129,8 +130,8 @@ export default {
     },
     overwriteAndClose() {
       this.checkoutDateActive = this.latest.updatedAt
-      this.$root.$emit('overwriteEditorContent')
-      this.$root.$emit('resetEditorConflict')
+      emitEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT)
+      emitEditorEvent(EDITOR_EVENTS.RESET_CONFLICT)
       this.close()
     },
     useLocal () {

@@ -11,9 +11,13 @@
 <script>
 import zxcvbn from 'zxcvbn'
 import _ from 'lodash'
+import { getCompatModelValue } from '../../modules/vue-model-compat'
 
 export default {
   props: {
+    modelValue: {
+      type: String
+    },
     value: {
       type: String,
       default: ''
@@ -30,8 +34,13 @@ export default {
       passwordStrengthText: ''
     }
   },
+  computed: {
+    inputValue () {
+      return getCompatModelValue(this)
+    }
+  },
   watch: {
-    value(newValue) {
+    inputValue(newValue) {
       this.checkPasswordStrength(newValue)
     }
   },

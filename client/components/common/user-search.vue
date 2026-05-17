@@ -29,10 +29,10 @@
           two-line
           dense
           )
-          template(v-for='(usr, idx) in items')
-            v-list-item(:key='usr.id', @click='setUser(usr)')
+          template(v-for='(usr, idx) in items', :key='usr.id')
+            v-list-item(@click='setUser(usr)')
               v-list-item-avatar(size='40', color='primary')
-                span.body-1.white--text {{usr.name | initials}}
+                span.body-1.white--text {{ $helpers.initials(usr.name) }}
               v-list-item-content
                 v-list-item-title.body-2 {{usr.name}}
                 v-list-item-subtitle {{usr.email}}
@@ -51,17 +51,16 @@
 <script>
 import _ from 'lodash'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 export default {
-  filters: {
-    initials(val) {
-      return val.split(' ').map(v => v.substring(0, 1)).join('')
-    }
-  },
   props: {
     multiple: {
       type: Boolean,
       default: false
+    },
+    modelValue: {
+      type: Boolean
     },
     value: {
       type: Boolean,
@@ -77,13 +76,16 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     dialogOpen: {
-      get() { return this.value },
-      set(value) { this.$emit('input', value) }
+      get() { return this.dialogValue },
+      set(value) { emitCompatModelValue(this, value) }
     }
   },
   watch: {
-    value(newValue, oldValue) {
+    dialogValue(newValue, oldValue) {
       if (newValue && !oldValue) {
         this.search = ''
         this.selectedItems = null
@@ -93,7 +95,7 @@ export default {
   },
   methods: {
     close() {
-      this.$emit('input', false)
+      emitCompatModelValue(this, false)
     },
     setUser(usr) {
       this.$emit('select', usr)

@@ -243,17 +243,20 @@
 import _ from 'lodash'
 import { sync } from 'vuex-pathify'
 import gql from 'graphql-tag'
+import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
+import { defineCompatAsyncComponent } from '../../modules/vue-async-component'
 
+import { ensureLegacyStoreModule } from '../../modules/store-legacy'
+import store from '../../store'
 import editorStore from '../../store/editor'
 
-/* global WIKI */
-
-WIKI.$store.registerModule('editor', editorStore)
+ensureLegacyStoreModule(store, 'editor', editorStore)
 
 export default {
   i18nOptions: { namespaces: 'editor' },
   components: {
-    editorModalMedia: () => import(/* webpackChunkName: "editor", webpackMode: "lazy" */ '../editor/editor-modal-media.vue')
+    editorModalMedia: defineCompatAsyncComponent(() => import(/* webpackChunkName: "editor", webpackMode: "lazy" */ '../editor/editor-modal-media.vue'))
   },
   data() {
     return {
@@ -292,6 +295,12 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    disposeEditorEvents() {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     async save () {
       try {
         await this.$apollo.mutate({
@@ -392,13 +401,13 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('editorInsert', opts => {
-      this.config.authLoginBgUrl = opts.path
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.INSERT, opts => {
+        this.config.authLoginBgUrl = opts.path
+      })
+    ]
   },
-  beforeDestroy() {
-    this.$root.$off('editorInsert')
-  },
+  ...createCompatUnmountHooks('disposeEditorEvents'),
   apollo: {
     config: {
       query: gql`

@@ -1,7 +1,7 @@
 <template lang='pug'>
   v-app.admin
     nav-header(hide-search)
-      template(slot='mid')
+      template(v-slot:mid)
         v-spacer
         .overline.grey--text {{$t('admin:adminArea')}}
         v-spacer
@@ -100,9 +100,10 @@
               no-action
               v-if='hasPermission([`manage:system`, `manage:api`])'
               )
-              v-list-item(slot='activator')
-                v-list-item-avatar(size='24', tile): v-icon mdi-dev-to
-                v-list-item-title {{ $t('admin:dev.title') }}
+              template(v-slot:activator)
+                v-list-item
+                  v-list-item-avatar(size='24', tile): v-icon mdi-dev-to
+                  v-list-item-title {{ $t('admin:dev.title') }}
 
               v-list-item(to='/dev-flags', color='primary')
                 v-list-item-title {{ $t('admin:dev.flags.title') }}
@@ -128,54 +129,21 @@
 
 <script>
 import _ from 'lodash'
-import VueRouter from 'vue-router'
 import { get, sync } from 'vuex-pathify'
 
 import statsQuery from 'gql/admin/dashboard/dashboard-query-stats.gql'
 
+import { createLegacyRouter } from '../modules/router-legacy'
+import { ensureLegacyStoreModule } from '../modules/store-legacy'
+import { adminRoutes } from '../router/routes-admin'
+import store from '../store'
 import adminStore from '../store/admin'
 
-/* global WIKI */
+ensureLegacyStoreModule(store, 'admin', adminStore)
 
-WIKI.$store.registerModule('admin', adminStore)
-
-const router = new VueRouter({
-  mode: 'history',
+const router = createLegacyRouter({
   base: '/a',
-  routes: [
-    { path: '/', redirect: '/dashboard' },
-    { path: '/dashboard', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-dashboard.vue') },
-    { path: '/general', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-general.vue') },
-    { path: '/locale', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-locale.vue') },
-    { path: '/navigation', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-navigation.vue') },
-    { path: '/pages', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-pages.vue') },
-    { path: '/pages/:id(\\d+)', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-pages-edit.vue') },
-    { path: '/pages/visualize', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-pages-visualize.vue') },
-    { path: '/tags', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-tags.vue') },
-    { path: '/theme', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-theme.vue') },
-    { path: '/groups', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-groups.vue') },
-    { path: '/groups/:id(\\d+)', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-groups-edit.vue') },
-    { path: '/users', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-users.vue') },
-    { path: '/users/:id(\\d+)', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-users-edit.vue') },
-    { path: '/analytics', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-analytics.vue') },
-    { path: '/auth', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-auth.vue') },
-    { path: '/comments', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-comments.vue') },
-    { path: '/rendering', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-rendering.vue') },
-    { path: '/editor', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-editor.vue') },
-    { path: '/extensions', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-extensions.vue') },
-    { path: '/logging', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-logging.vue') },
-    { path: '/search', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-search.vue') },
-    { path: '/storage', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-storage.vue') },
-    { path: '/api', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-api.vue') },
-    { path: '/mail', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-mail.vue') },
-    { path: '/security', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-security.vue') },
-    { path: '/ssl', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-ssl.vue') },
-    { path: '/system', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-system.vue') },
-    { path: '/utilities', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-utilities.vue') },
-    { path: '/webhooks', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-webhooks.vue') },
-    { path: '/dev-flags', component: () => import(/* webpackChunkName: "admin-dev" */ './admin/admin-dev-flags.vue') },
-    { path: '/contribute', component: () => import(/* webpackChunkName: "admin" */ './admin/admin-contribute.vue') }
-  ]
+  routes: adminRoutes
 })
 
 export default {

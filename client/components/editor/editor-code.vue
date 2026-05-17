@@ -59,6 +59,8 @@
 <script>
 import _ from 'lodash'
 import { get, sync } from 'vuex-pathify'
+import { EDITOR_EVENTS, onEditorEvent } from '../../modules/editor-events'
+import { createCompatUnmountHooks } from '../../modules/vue-unmount-bridge'
 
 // ========================================
 // IMPORTS
@@ -106,6 +108,12 @@ export default {
     activeModal: sync('editor/activeModal')
   },
   methods: {
+    disposeEditorEvents() {
+      if (this.editorEventUnsubscribers) {
+        this.editorEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+        this.editorEventUnsubscribers = null
+      }
+    },
     toggleModal(key) {
       this.activeModal = (this.activeModal === key) ? '' : key
       this.helpShown = false
@@ -226,37 +234,35 @@ export default {
 
     // Render initial preview
 
-    this.$root.$on('editorInsert', opts => {
-      switch (opts.kind) {
-        case 'IMAGE':
-          let img = `<img src="${opts.path}" alt="${opts.text}"`
-          if (opts.align && opts.align !== '') {
-            img += ` class="align-${opts.align}"`
-          }
-          img += ` />`
-          this.insertAtCursor({
-            content: img
-          })
-          break
-        case 'BINARY':
-          this.insertAtCursor({
-            content: `<a href="${opts.path}" title="${opts.text}">${opts.text}</a>`
-          })
-          break
-      }
-    })
-
-    // Handle save conflict
-    this.$root.$on('saveConflict', () => {
-      this.toggleModal(`editorModalConflict`)
-    })
-    this.$root.$on('overwriteEditorContent', () => {
-      this.cm.setValue(this.$store.get('editor/content'))
-    })
+    this.editorEventUnsubscribers = [
+      onEditorEvent(EDITOR_EVENTS.INSERT, opts => {
+        switch (opts.kind) {
+          case 'IMAGE':
+            let img = `<img src="${opts.path}" alt="${opts.text}"`
+            if (opts.align && opts.align !== '') {
+              img += ` class="align-${opts.align}"`
+            }
+            img += ` />`
+            this.insertAtCursor({
+              content: img
+            })
+            break
+          case 'BINARY':
+            this.insertAtCursor({
+              content: `<a href="${opts.path}" title="${opts.text}">${opts.text}</a>`
+            })
+            break
+        }
+      }),
+      onEditorEvent(EDITOR_EVENTS.SAVE_CONFLICT, () => {
+        this.toggleModal(`editorModalConflict`)
+      }),
+      onEditorEvent(EDITOR_EVENTS.OVERWRITE_CONTENT, () => {
+        this.cm.setValue(this.$store.get('editor/content'))
+      })
+    ]
   },
-  beforeDestroy() {
-    this.$root.$off('editorInsert')
-  }
+  ...createCompatUnmountHooks('disposeEditorEvents')
 }
 </script>
 
