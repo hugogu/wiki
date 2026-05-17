@@ -92,12 +92,16 @@
 import _ from 'lodash'
 import validate from 'validate.js'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import createUserMutation from 'gql/admin/users/users-mutation-create.gql'
 import groupsQuery from 'gql/admin/users/users-query-groups.gql'
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -117,13 +121,16 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     }
   },
   watch: {
-    value(newValue, oldValue) {
+    dialogValue(newValue, oldValue) {
       if (newValue) {
         this.$nextTick(() => {
           this.$refs.emailInput.focus()

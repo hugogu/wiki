@@ -235,6 +235,7 @@ import Cookies from 'js-cookie'
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
 import { EDITOR_EVENTS, emitEditorEvent } from '../../modules/editor-events'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import listAssetQuery from 'gql/editor/editor-media-query-list.gql'
 import listFolderAssetQuery from 'gql/editor/editor-media-query-folder-list.gql'
@@ -251,6 +252,9 @@ export default {
     FilePond
   },
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -284,9 +288,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     editorKey: get('editor/editorKey'),
     activeModal: sync('editor/activeModal'),

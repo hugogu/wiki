@@ -51,12 +51,16 @@
 <script>
 import _ from 'lodash'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 export default {
   props: {
     multiple: {
       type: Boolean,
       default: false
+    },
+    modelValue: {
+      type: Boolean
     },
     value: {
       type: Boolean,
@@ -72,13 +76,16 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     dialogOpen: {
-      get() { return this.value },
-      set(value) { this.$emit('input', value) }
+      get() { return this.dialogValue },
+      set(value) { emitCompatModelValue(this, value) }
     }
   },
   watch: {
-    value(newValue, oldValue) {
+    dialogValue(newValue, oldValue) {
       if (newValue && !oldValue) {
         this.search = ''
         this.selectedItems = null
@@ -88,7 +95,7 @@ export default {
   },
   methods: {
     close() {
-      this.$emit('input', false)
+      emitCompatModelValue(this, false)
     },
     setUser(usr) {
       this.$emit('select', usr)

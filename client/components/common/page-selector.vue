@@ -104,6 +104,7 @@
 <script>
 import _ from 'lodash'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 const localeSegmentRegex = /^[A-Z]{2}(-[A-Z]{2})?$/i
 
@@ -111,6 +112,9 @@ const localeSegmentRegex = /^[A-Z]{2}(-[A-Z]{2})?$/i
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -177,9 +181,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     currentPages () {
       return _.sortBy(_.filter(this.pages, ['parent', _.head(this.currentNode) || 0]), ['title', 'path'])

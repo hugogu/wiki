@@ -251,6 +251,7 @@
 import _ from 'lodash'
 import { sync, get } from 'vuex-pathify'
 import gql from 'graphql-tag'
+import { emitCompatModelValue, getCompatModelValue } from '../../modules/vue-model-compat'
 
 import CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
@@ -262,6 +263,9 @@ const filenamePattern = /^(?![\#\/\.\$\^\=\*\;\:\&\?\(\)\[\]\{\}\"\'\>\<\,\@\!\%
 
 export default {
   props: {
+    modelValue: {
+      type: Boolean
+    },
     value: {
       type: Boolean,
       default: false
@@ -287,9 +291,12 @@ export default {
     }
   },
   computed: {
+    dialogValue () {
+      return getCompatModelValue(this)
+    },
     isShown: {
-      get() { return this.value },
-      set(val) { this.$emit('input', val) }
+      get() { return this.dialogValue },
+      set(val) { emitCompatModelValue(this, val) }
     },
     mode: get('editor/mode'),
     title: sync('page/title'),
@@ -309,7 +316,7 @@ export default {
     }
   },
   watch: {
-    value (newValue, oldValue) {
+    dialogValue (newValue, oldValue) {
       if (newValue) {
         _.delay(() => {
           this.$refs.iptTitle.focus()
@@ -414,7 +421,7 @@ export default {
       fetchPolicy: 'cache-first',
       update: (data) => _.get(data, 'pages.searchTags', []),
       skip () {
-        return !this.value || _.isEmpty(this.newTagSearch)
+        return !this.dialogValue || _.isEmpty(this.newTagSearch)
       },
       throttle: 500
     }
