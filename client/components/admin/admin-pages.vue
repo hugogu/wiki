@@ -54,7 +54,8 @@
             :items='filteredPages'
             :headers='headers'
             :search='search'
-            :page.sync='pagination'
+            :page='pagination'
+            @update:page='pagination = $event'
             :items-per-page='15'
             :loading='loading'
             must-sort,

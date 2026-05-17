@@ -15,7 +15,8 @@
           v-data-table(
             :items='pages'
             :headers='headers'
-            :page.sync='pagination'
+            :page='pagination'
+            @update:page='pagination = $event'
             :items-per-page='15'
             :loading='loading'
             must-sort,

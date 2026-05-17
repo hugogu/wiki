@@ -97,7 +97,8 @@
           :items-per-page='4'
           :search='innerSearch'
           :loading='isLoading'
-          :options.sync='pagination'
+          :options='pagination'
+          @update:options='pagination = $event'
           @page-count='pageTotal = $event'
           hide-default-footer
           ref='dude'

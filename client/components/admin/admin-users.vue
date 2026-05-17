@@ -44,7 +44,8 @@
             :items='usersFiltered',
             :headers='headers',
             :search='search',
-            :page.sync='pagination'
+            :page='pagination'
+            @update:page='pagination = $event'
             :items-per-page='15'
             :loading='loading'
             @page-count='pageCount = $event'
