@@ -1,6 +1,5 @@
 /* global siteConfig */
 
-import * as VueModule from 'vue'
 import VueClipboards from 'vue-clipboards'
 import { ApolloClient } from 'apollo-client'
 import { BatchHttpLink } from 'apollo-link-batch-http'
@@ -33,6 +32,7 @@ import {
 import { buildLegacyPageMountOptions } from './modules/page-mount-legacy'
 import { createLegacyClientAppOptions } from './modules/app-options-legacy'
 import { mountLegacyVueApp } from './modules/vue-legacy-instance'
+import { legacyVueRegistrationTarget } from './modules/vue-legacy-runtime'
 import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 
 // ====================================
@@ -40,8 +40,6 @@ import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 // ====================================
 
 import helpers from './helpers'
-
-const LegacyVue = VueModule.default || VueModule
 
 const themeComponentLoaders = import.meta.glob('./themes/*/components/*.vue')
 const getThemeComponentLoader = (componentName) => {
@@ -153,13 +151,13 @@ window.graphQL = new ApolloClient({
   connectToDevTools: import.meta.env.DEV
 })
 
-installLegacyPlugins(LegacyVue, {
+installLegacyPlugins(legacyVueRegistrationTarget, {
   localization,
   helpers,
   moment,
   velocity: Velocity
 })
-registerLegacyAppComponents(LegacyVue, getThemeComponentLoader)
+registerLegacyAppComponents(legacyVueRegistrationTarget, getThemeComponentLoader)
 
 let bootstrap = () => {
   // ====================================

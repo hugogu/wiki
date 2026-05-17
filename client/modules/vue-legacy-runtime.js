@@ -102,6 +102,7 @@ export function createLegacyVueRuntime ({
 
 const legacyVueRuntime = createLegacyVueRuntime()
 
+export const legacyVueRegistrationTarget = DefaultVueConstructor
 export const hasLegacyVueRuntimeAppApi = false
 export const ensureLegacyRouterInstalled = legacyVueRuntime.ensureLegacyRouterInstalled
 export const ensureLegacyStoreInstalled = legacyVueRuntime.ensureLegacyStoreInstalled
