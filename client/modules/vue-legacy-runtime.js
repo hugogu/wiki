@@ -2,48 +2,70 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 
-let isLegacyRouterInstalled = false
-let isLegacyStoreInstalled = false
+export function createLegacyVueRuntime ({
+  VueConstructor = Vue,
+  VueRouterConstructor = VueRouter,
+  VuexConstructor = Vuex
+} = {}) {
+  let isLegacyRouterInstalled = false
+  let isLegacyStoreInstalled = false
 
-export function ensureLegacyRouterInstalled (VueConstructor = Vue) {
-  if (!isLegacyRouterInstalled) {
-    VueConstructor.use(VueRouter)
-    isLegacyRouterInstalled = true
+  const ensureLegacyRouterInstalled = () => {
+    if (!isLegacyRouterInstalled) {
+      VueConstructor.use(VueRouterConstructor)
+      isLegacyRouterInstalled = true
+    }
+  }
+
+  const ensureLegacyStoreInstalled = () => {
+    if (!isLegacyStoreInstalled) {
+      VueConstructor.use(VuexConstructor)
+      isLegacyStoreInstalled = true
+    }
+  }
+
+  const createLegacyRouterInstance = ({ base, routes = [], beforeEach, afterEach }) => {
+    ensureLegacyRouterInstalled()
+
+    const router = new VueRouterConstructor({
+      mode: 'history',
+      base,
+      routes
+    })
+
+    if (beforeEach) {
+      router.beforeEach(beforeEach)
+    }
+
+    if (afterEach) {
+      router.afterEach(afterEach)
+    }
+
+    return router
+  }
+
+  const createLegacyStoreInstance = (options) => {
+    ensureLegacyStoreInstalled()
+    return new VuexConstructor.Store(options)
+  }
+
+  const mountLegacyVueInstance = (options) => {
+    return new VueConstructor(options)
+  }
+
+  return {
+    ensureLegacyRouterInstalled,
+    ensureLegacyStoreInstalled,
+    createLegacyRouterInstance,
+    createLegacyStoreInstance,
+    mountLegacyVueInstance
   }
 }
 
-export function ensureLegacyStoreInstalled (VueConstructor = Vue) {
-  if (!isLegacyStoreInstalled) {
-    VueConstructor.use(Vuex)
-    isLegacyStoreInstalled = true
-  }
-}
+const legacyVueRuntime = createLegacyVueRuntime()
 
-export function createLegacyRouterInstance ({ base, routes = [], beforeEach, afterEach }) {
-  ensureLegacyRouterInstalled()
-
-  const router = new VueRouter({
-    mode: 'history',
-    base,
-    routes
-  })
-
-  if (beforeEach) {
-    router.beforeEach(beforeEach)
-  }
-
-  if (afterEach) {
-    router.afterEach(afterEach)
-  }
-
-  return router
-}
-
-export function createLegacyStoreInstance (options) {
-  ensureLegacyStoreInstalled()
-  return new Vuex.Store(options)
-}
-
-export function mountLegacyVueInstance (options) {
-  return new Vue(options)
-}
+export const ensureLegacyRouterInstalled = legacyVueRuntime.ensureLegacyRouterInstalled
+export const ensureLegacyStoreInstalled = legacyVueRuntime.ensureLegacyStoreInstalled
+export const createLegacyRouterInstance = legacyVueRuntime.createLegacyRouterInstance
+export const createLegacyStoreInstance = legacyVueRuntime.createLegacyStoreInstance
+export const mountLegacyVueInstance = legacyVueRuntime.mountLegacyVueInstance

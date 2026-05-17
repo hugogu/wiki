@@ -1,16 +1,21 @@
 let currentWikiInstance = null
 
+const syncLegacyGlobalWikiInstance = (instance) => {
+  const globalTarget = typeof window !== 'undefined' ? window : globalThis
+  globalTarget.WIKI = instance
+}
+
 export function getWikiInstance () {
   return currentWikiInstance
 }
 
 export function setWikiInstance (instance) {
   currentWikiInstance = instance
-  window.WIKI = instance
+  syncLegacyGlobalWikiInstance(instance)
   return instance
 }
 
 export function clearWikiInstance () {
   currentWikiInstance = null
-  window.WIKI = null
+  syncLegacyGlobalWikiInstance(null)
 }
