@@ -12,7 +12,7 @@
     "watch": "vite build --watch --config vite.config.mjs",
     "test": "eslint --format codeframe --ext .js,.vue . && pug-lint server/views && jest",
     "cypress:open": "cypress open",
-    "postinstall": "patch-package"
+    "postinstall": "node dev/run-patch-package.js"
   },
   "repository": {
     "type": "git",
