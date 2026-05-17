@@ -152,16 +152,15 @@
 </template>
 
 <script>
-import VueRouter from 'vue-router'
 import _ from 'lodash'
 
 import tagsQuery from 'gql/common/common-pages-query-tags.gql'
 import pagesQuery from 'gql/common/common-pages-query-list.gql'
+import { createLegacyRouter } from '../modules/router-legacy'
 
 /* global siteLangs */
 
-const router = new VueRouter({
-  mode: 'history',
+const router = createLegacyRouter({
   base: '/t'
 })
 

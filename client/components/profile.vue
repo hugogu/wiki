@@ -32,28 +32,25 @@
 </template>
 
 <script>
-import VueRouter from 'vue-router'
+import { createLegacyRouter } from '../modules/router-legacy'
 
 /* global WIKI */
 
-const router = new VueRouter({
-  mode: 'history',
+const router = createLegacyRouter({
   base: '/p',
   routes: [
     { path: '/', redirect: '/profile' },
     { path: '/profile', component: () => import(/* webpackChunkName: "profile" */ './profile/profile.vue') },
     { path: '/pages', component: () => import(/* webpackChunkName: "profile" */ './profile/pages.vue') },
     { path: '/comments', component: () => import(/* webpackChunkName: "profile" */ './profile/comments.vue') }
-  ]
-})
-
-router.beforeEach((to, from, next) => {
-  WIKI.$store.commit('loadingStart', 'profile')
-  next()
-})
-
-router.afterEach((to, from) => {
-  WIKI.$store.commit('loadingStop', 'profile')
+  ],
+  beforeEach: (to, from, next) => {
+    WIKI.$store.commit('loadingStart', 'profile')
+    next()
+  },
+  afterEach: () => {
+    WIKI.$store.commit('loadingStop', 'profile')
+  }
 })
 
 export default {

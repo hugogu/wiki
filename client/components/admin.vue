@@ -128,19 +128,18 @@
 
 <script>
 import _ from 'lodash'
-import VueRouter from 'vue-router'
 import { get, sync } from 'vuex-pathify'
 
 import statsQuery from 'gql/admin/dashboard/dashboard-query-stats.gql'
 
+import { createLegacyRouter } from '../modules/router-legacy'
 import adminStore from '../store/admin'
 
 /* global WIKI */
 
 WIKI.$store.registerModule('admin', adminStore)
 
-const router = new VueRouter({
-  mode: 'history',
+const router = createLegacyRouter({
   base: '/a',
   routes: [
     { path: '/', redirect: '/dashboard' },
