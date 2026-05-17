@@ -58,6 +58,7 @@
 import _ from 'lodash'
 import { sync } from 'vuex-pathify'
 import { OrbitSpinner } from 'epic-spinners'
+import { onPageEvent, SEARCH_EVENTS } from '../../modules/page-events'
 
 import searchPagesQuery from 'gql/common/common-pages-query-search.gql'
 
@@ -70,6 +71,7 @@ export default {
       cursor: 0,
       pagination: 1,
       perPage: 10,
+      searchEventUnsubscribers: [],
       response: {
         results: [],
         suggestions: [],
@@ -111,25 +113,31 @@ export default {
     }
   },
   mounted() {
-    this.$root.$on('searchMove', (dir) => {
-      this.cursor += ((dir === 'up') ? -1 : 1)
-      if (this.cursor < -1) {
-        this.cursor = -1
-      } else if (this.cursor > this.results.length + this.suggestions.length - 1) {
-        this.cursor = this.results.length + this.suggestions.length - 1
-      }
-    })
-    this.$root.$on('searchEnter', () => {
-      if (!this.results) {
-        return
-      }
+    this.searchEventUnsubscribers = [
+      onPageEvent(SEARCH_EVENTS.MOVE, (dir) => {
+        this.cursor += ((dir === 'up') ? -1 : 1)
+        if (this.cursor < -1) {
+          this.cursor = -1
+        } else if (this.cursor > this.results.length + this.suggestions.length - 1) {
+          this.cursor = this.results.length + this.suggestions.length - 1
+        }
+      }),
+      onPageEvent(SEARCH_EVENTS.ENTER, () => {
+        if (!this.results) {
+          return
+        }
 
-      if (this.cursor >= 0 && this.cursor < this.results.length) {
-        this.goToPage(_.nth(this.results, this.cursor))
-      } else if (this.cursor >= 0) {
-        this.setSearchTerm(_.nth(this.suggestions, this.cursor - this.results.length))
-      }
-    })
+        if (this.cursor >= 0 && this.cursor < this.results.length) {
+          this.goToPage(_.nth(this.results, this.cursor))
+        } else if (this.cursor >= 0) {
+          this.setSearchTerm(_.nth(this.suggestions, this.cursor - this.results.length))
+        }
+      })
+    ]
+  },
+  beforeDestroy () {
+    this.searchEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+    this.searchEventUnsubscribers = []
   },
   methods: {
     setSearchTerm(term) {

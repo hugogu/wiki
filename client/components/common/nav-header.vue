@@ -252,6 +252,7 @@
 <script>
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
+import { emitPageEvent, onPageEvent, PAGE_EVENTS, SEARCH_EVENTS } from '../../modules/page-events'
 
 import movePageMutation from 'gql/common/common-pages-mutation-move.gql'
 
@@ -283,6 +284,7 @@ export default {
       deletePageModal: false,
       locales: siteLangs,
       isDevMode: false,
+      pageEventUnsubscribers: [],
       duplicateOpts: {
         locale: 'en',
         path: 'new-page',
@@ -348,28 +350,20 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('pageEdit', () => {
-      this.pageEdit()
-    })
-    this.$root.$on('pageHistory', () => {
-      this.pageHistory()
-    })
-    this.$root.$on('pageSource', () => {
-      this.pageSource()
-    })
-    this.$root.$on('pageMove', () => {
-      this.pageMove()
-    })
-    this.$root.$on('pageConvert', () => {
-      this.pageConvert()
-    })
-    this.$root.$on('pageDuplicate', () => {
-      this.pageDuplicate()
-    })
-    this.$root.$on('pageDelete', () => {
-      this.pageDelete()
-    })
+    this.pageEventUnsubscribers = [
+      onPageEvent(PAGE_EVENTS.EDIT, () => this.pageEdit()),
+      onPageEvent(PAGE_EVENTS.HISTORY, () => this.pageHistory()),
+      onPageEvent(PAGE_EVENTS.SOURCE, () => this.pageSource()),
+      onPageEvent(PAGE_EVENTS.MOVE, () => this.pageMove()),
+      onPageEvent(PAGE_EVENTS.CONVERT, () => this.pageConvert()),
+      onPageEvent(PAGE_EVENTS.DUPLICATE, () => this.pageDuplicate()),
+      onPageEvent(PAGE_EVENTS.DELETE, () => this.pageDelete())
+    ]
     this.isDevMode = siteConfig.devMode === true
+  },
+  beforeDestroy () {
+    this.pageEventUnsubscribers.forEach(unsubscribe => unsubscribe())
+    this.pageEventUnsubscribers = []
   },
   methods: {
     searchFocus () {
@@ -391,10 +385,10 @@ export default {
       }
     },
     searchEnter () {
-      this.$root.$emit('searchEnter', true)
+      emitPageEvent(SEARCH_EVENTS.ENTER, true)
     },
     searchMove(dir) {
-      this.$root.$emit('searchMove', dir)
+      emitPageEvent(SEARCH_EVENTS.MOVE, dir)
     },
     pageNew () {
       this.newPageModal = true
