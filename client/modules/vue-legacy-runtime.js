@@ -58,6 +58,16 @@ export function createLegacyVueRuntime ({
         } else if (this.$parent?.$store) {
           this.$store = this.$parent.$store
         }
+
+        const ownApolloProvider = typeof this.$options.apolloProvider === 'function'
+          ? this.$options.apolloProvider()
+          : this.$options.apolloProvider
+
+        if (ownApolloProvider) {
+          this.$apolloProvider = ownApolloProvider
+        } else if (this.$parent?.$apolloProvider) {
+          this.$apolloProvider = this.$parent.$apolloProvider
+        }
       }
     })
 

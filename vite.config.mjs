@@ -5,6 +5,7 @@ import graphql from '@rollup/plugin-graphql'
 
 const ROOT_PATH = process.cwd()
 const OUTPUT_PATH = path.join(ROOT_PATH, 'assets')
+const VUE_COMPAT_WRAPPER_PATH = path.join(ROOT_PATH, 'client', 'modules', 'vue-compat-wrapper.js')
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
@@ -37,10 +38,10 @@ export default defineConfig(({ mode }) => {
     resolve: {
       dedupe: ['vue'],
       alias: [
-        { find: 'vue/dist/vue.esm', replacement: '@vue/compat' },
-        { find: 'vue/dist/vue.esm.js', replacement: '@vue/compat' },
-        { find: 'vue/dist/vue.runtime.esm.js', replacement: '@vue/compat' },
-        { find: /^vue$/, replacement: '@vue/compat' },
+        { find: 'vue/dist/vue.esm', replacement: VUE_COMPAT_WRAPPER_PATH },
+        { find: 'vue/dist/vue.esm.js', replacement: VUE_COMPAT_WRAPPER_PATH },
+        { find: 'vue/dist/vue.runtime.esm.js', replacement: VUE_COMPAT_WRAPPER_PATH },
+        { find: /^vue$/, replacement: VUE_COMPAT_WRAPPER_PATH },
         { find: 'vuex-pathify', replacement: 'vuex-pathify/dist/vuex-pathify.esm.js' },
         { find: '@', replacement: path.join(ROOT_PATH, 'client') },
         { find: 'gql', replacement: path.join(ROOT_PATH, 'client', 'graph') },
