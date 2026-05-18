@@ -23,6 +23,7 @@ export function createLegacyVueRuntime ({
 } = {}) {
   let isLegacyRouterInstalled = false
   let isLegacyStoreInstalled = false
+  let isModernStoreBridgeInstalled = false
   const hasModernRouterApi = typeof createRouter === 'function' && typeof createWebHistory === 'function'
   const hasModernStoreApi = typeof createStore === 'function'
   const hasModernAppApi = typeof createApp === 'function'
@@ -39,6 +40,28 @@ export function createLegacyVueRuntime ({
       VueConstructor.use(VuexConstructor)
       isLegacyStoreInstalled = true
     }
+  }
+
+  const ensureModernStoreBridgeInstalled = () => {
+    if (!hasModernStoreApi || hasModernAppApi || isModernStoreBridgeInstalled || typeof VueConstructor?.mixin !== 'function') {
+      return
+    }
+
+    VueConstructor.mixin({
+      beforeCreate () {
+        const ownStore = typeof this.$options.store === 'function'
+          ? this.$options.store()
+          : this.$options.store
+
+        if (ownStore) {
+          this.$store = ownStore
+        } else if (this.$parent?.$store) {
+          this.$store = this.$parent.$store
+        }
+      }
+    })
+
+    isModernStoreBridgeInstalled = true
   }
 
   const createLegacyRouterInstance = ({ base, routes = [], beforeEach, afterEach }) => {
@@ -90,12 +113,14 @@ export function createLegacyVueRuntime ({
       return app.mount(el)
     }
 
+    ensureModernStoreBridgeInstalled()
     return new VueConstructor(options)
   }
 
   return {
     ensureLegacyRouterInstalled,
     ensureLegacyStoreInstalled,
+    ensureModernStoreBridgeInstalled,
     createLegacyRouterInstance,
     createLegacyStoreInstance,
     mountLegacyVueInstance
@@ -108,6 +133,7 @@ export const legacyVueRegistrationTarget = DefaultVueConstructor
 export const hasLegacyVueRuntimeAppApi = false
 export const ensureLegacyRouterInstalled = legacyVueRuntime.ensureLegacyRouterInstalled
 export const ensureLegacyStoreInstalled = legacyVueRuntime.ensureLegacyStoreInstalled
+export const ensureModernStoreBridgeInstalled = legacyVueRuntime.ensureModernStoreBridgeInstalled
 export const createLegacyRouterInstance = legacyVueRuntime.createLegacyRouterInstance
 export const createLegacyStoreInstance = legacyVueRuntime.createLegacyStoreInstance
 export const mountLegacyVueInstance = legacyVueRuntime.mountLegacyVueInstance
