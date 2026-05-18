@@ -1,5 +1,5 @@
 <template lang='pug'>
-  v-dialog(v-model='isShown', persistent, max-width='350', :overlay-color='color', overlay-opacity='.7')
+  v-dialog(:value='isShown', @input='isShown = $event', persistent, max-width='350', :overlay-color='color', overlay-opacity='.7')
     v-card.loader-dialog.radius-7(:color='color', dark)
       v-card-text.text-center.py-4
         atom-spinner.is-inline(

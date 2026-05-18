@@ -1,5 +1,5 @@
 <template lang='pug'>
-  v-dialog(v-model='isShown', persistent, max-width='700', no-click-animation)
+  v-dialog(:value='isShown', @input='isShown = $event', persistent, max-width='700', no-click-animation)
     v-btn(fab, fixed, bottom, right, color='grey darken-3', dark, @click='goBack', style='width: 50px;'): v-icon mdi-undo-variant
     v-card.radius-7(color='blue darken-3', dark)
       v-card-text.text-center.py-4
@@ -91,6 +91,14 @@ export default {
     currentEditor: sync('editor/editor'),
     locale: get('page/locale'),
     path: get('page/path')
+  },
+  watch: {
+    isShown (value) {
+      document.documentElement.setAttribute('data-editor-select-visible', String(value))
+    }
+  },
+  mounted () {
+    document.documentElement.setAttribute('data-editor-select-visible', String(this.isShown))
   },
   methods: {
     selectEditor (name) {

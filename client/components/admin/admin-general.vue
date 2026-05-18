@@ -256,7 +256,7 @@
                       persistent-hint
                       )
 
-    component(:is='activeModal')
+    component(v-if='activeModal', :is='activeModal')
 
 </template>
 

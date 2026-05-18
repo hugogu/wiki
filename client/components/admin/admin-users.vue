@@ -26,51 +26,24 @@
               dense
               )
             v-spacer
-            v-select(
-              solo
-              flat
-              hide-details
-              label='Identity Provider'
-              :items='strategies'
-              v-model='filterStrategy'
-              item-text='displayName'
-              item-value='key'
-              style='max-width: 300px;'
-              dense
-            )
+            select.admin-filter-select(v-model='filterStrategy')
+              option(v-for='strategy in strategies', :key='strategy.key', :value='strategy.key') {{ strategy.displayName }}
           v-divider
-          v-data-table(
-            v-model='selected'
-            :items='usersFiltered',
-            :headers='headers',
-            :search='search',
-            :page='pagination'
-            @update:page='pagination = $event'
-            :items-per-page='15'
-            :loading='loading'
-            @page-count='pageCount = $event'
-            hide-default-footer
-            )
-            template(v-slot:item='props')
-              tr.is-clickable(:active='props.selected', @click='$router.push("/users/" + props.item.id)')
-                //- td
-                  v-checkbox(hide-details, :input-value='props.selected', color='blue darken-2', @click='props.selected = !props.selected')
-                td {{ props.item.id }}
-                td: strong {{ props.item.name }}
-                td {{ props.item.email }}
-                td {{ getStrategyName(props.item.providerKey) }}
-                td {{ $formatMoment(props.item.createdAt, 'from') }}
-                td
-                  span(v-if='props.item.lastLoginAt') {{ $formatMoment(props.item.lastLoginAt, 'from') }}
-                  em.grey--text(v-else) Never
-                td.text-right
-                  v-icon.mr-3(v-if='props.item.isSystem') mdi-lock-outline
-                  status-indicator(positive, pulse, v-if='props.item.isActive')
-                  status-indicator(negative, pulse, v-else)
-            template(v-slot:no-data)
-              .pa-3
-                v-alert.text-left(icon='mdi-alert', outlined, color='grey')
-                  em.body-2 No users to display!
+          v-progress-linear(v-if='loading', indeterminate, color='primary')
+          .admin-users-table(v-else-if='pagedUsers.length > 0')
+            .admin-users-row.is-clickable(v-for='user in pagedUsers', :key='user.id', @click='$router.push(`/users/` + user.id)')
+              .body-2
+                strong {{ user.id }} - {{ user.name }}
+              .caption {{ user.email }}
+              .caption Provider: {{ getStrategyName(user.providerKey) }}
+              .caption Created: {{ formatMoment(user.createdAt, 'from') }}
+              .caption
+                span(v-if='user.lastLoginAt') Last login: {{ formatMoment(user.lastLoginAt, 'from') }}
+                em.grey--text(v-else) Never logged in
+              .caption Status: {{ user.isSystem ? 'System / ' : '' }}{{ user.isActive ? 'Active' : 'Inactive' }}
+          .pa-3(v-else)
+            v-alert.text-left(icon='mdi-alert', outlined, color='grey')
+              em.body-2 No users to display!
           v-card-chin(v-if='pageCount > 1')
             v-spacer
             v-pagination(v-model='pagination', :length='pageCount')
@@ -91,21 +64,14 @@ export default {
     StatusIndicator,
     UserCreate
   },
+  mounted () {
+    this.loadUsers()
+  },
   data() {
     return {
       selected: [],
       pagination: 1,
-      pageCount: 0,
       users: [],
-      headers: [
-        { text: 'ID', value: 'id', width: 80, sortable: true },
-        { text: 'Name', value: 'name', sortable: true },
-        { text: 'Email', value: 'email', sortable: true },
-        { text: 'Provider', value: 'provider', sortable: true },
-        { text: 'Created', value: 'createdAt', sortable: true },
-        { text: 'Last Login', value: 'lastLoginAt', sortable: true },
-        { text: '', value: 'actions', sortable: false, width: 80 }
-      ],
       strategies: [],
       filterStrategy: 'all',
       search: '',
@@ -115,16 +81,119 @@ export default {
   },
   computed: {
     usersFiltered () {
+      const users = _.isArray(this.users) ? this.users : []
       const all = this.filterStrategy === 'all' || this.filterStrategy === ''
-      return _.filter(this.users, u => all || u.providerKey === this.filterStrategy)
+      const search = _.toLower(_.trim(this.search))
+      const filtered = _.filter(users, u => {
+        if (!all && u.providerKey !== this.filterStrategy) {
+          return false
+        }
+        if (search) {
+          const haystack = _.toLower([
+            u.id,
+            u.name,
+            u.email,
+            u.providerKey
+          ].join(' '))
+
+          if (!haystack.includes(search)) {
+            return false
+          }
+        }
+        return true
+      })
+
+      return _.orderBy(filtered, ['name', 'id'], ['asc', 'asc'])
+    },
+    pagedUsers () {
+      const start = (this.pagination - 1) * 15
+      return this.usersFiltered.slice(start, start + 15)
+    },
+    pageCount () {
+      return Math.max(1, Math.ceil(this.usersFiltered.length / 15))
+    }
+  },
+  watch: {
+    search () {
+      this.pagination = 1
+    },
+    filterStrategy () {
+      this.pagination = 1
+    },
+    pageCount (newValue) {
+      if (this.pagination > newValue) {
+        this.pagination = newValue
+      }
     }
   },
   methods: {
+    formatMoment (value, format = 'LLL') {
+      return this.$helpers?.formatMoment
+        ? this.$helpers.formatMoment(value, format)
+        : (typeof this.$formatMoment === 'function' ? this.$formatMoment(value, format) : '')
+    },
+    async loadUsers () {
+      this.loading = true
+      this.$store.commit('loadingStart', 'admin-users-refresh')
+      this.$store.commit('loadingStart', 'admin-users-strategies-refresh')
+
+      try {
+        const [usersResp, strategiesResp] = await Promise.all([
+          this.$apollo.query({
+            query: gql`
+              query {
+                users {
+                  list {
+                    id
+                    name
+                    email
+                    providerKey
+                    isSystem
+                    isActive
+                    createdAt
+                    lastLoginAt
+                  }
+                }
+              }
+            `,
+            fetchPolicy: 'network-only'
+          }),
+          this.$apollo.query({
+            query: gql`
+              query {
+                authentication {
+                  activeStrategies {
+                    key
+                    displayName
+                  }
+                }
+              }
+            `,
+            fetchPolicy: 'network-only'
+          })
+        ])
+
+        this.users = _.get(usersResp, 'data.users.list', [])
+        this.strategies = _.concat({
+          key: 'all',
+          displayName: 'All Providers'
+        }, _.get(strategiesResp, 'data.authentication.activeStrategies', []))
+
+        document.documentElement.setAttribute('data-admin-users-len', String(this.users.length))
+        document.documentElement.setAttribute('data-admin-user-strategies-len', String(this.strategies.length))
+      } catch (err) {
+        this.$store.commit('pushGraphError', err)
+      } finally {
+        this.loading = false
+        this.$store.commit('loadingStop', 'admin-users-refresh')
+        this.$store.commit('loadingStop', 'admin-users-strategies-refresh')
+      }
+    },
     createUser() {
       this.isCreateDialogShown = true
     },
     async refresh(notify = true) {
-      await this.$apollo.queries.users.refetch()
+      await this.loadUsers()
       if (notify) {
         this.$store.commit('showNotification', {
           message: 'Users list has been refreshed.',
@@ -136,58 +205,31 @@ export default {
     getStrategyName(key) {
       return (_.find(this.strategies, ['key', key]) || {}).displayName || key
     }
-  },
-  apollo: {
-    users: {
-      query: gql`
-        query {
-          users {
-            list {
-              id
-              name
-              email
-              providerKey
-              isSystem
-              isActive
-              createdAt
-              lastLoginAt
-            }
-          }
-        }
-      `,
-      fetchPolicy: 'network-only',
-      update: (data) => data.users.list,
-      watchLoading (isLoading) {
-        this.loading = isLoading
-        this.$store.commit(`loading${isLoading ? 'Start' : 'Stop'}`, 'admin-users-refresh')
-      }
-    },
-    strategies: {
-      query: gql`
-        query {
-          authentication {
-            activeStrategies {
-              key
-              displayName
-            }
-          }
-        }
-      `,
-      fetchPolicy: 'network-only',
-      update: (data) => {
-        return _.concat({
-          key: 'all',
-          displayName: 'All Providers'
-        }, data.authentication.activeStrategies)
-      },
-      watchLoading (isLoading) {
-        this.$store.commit(`loading${isLoading ? 'Start' : 'Stop'}`, 'admin-users-strategies-refresh')
-      }
-    }
   }
 }
 </script>
 
 <style lang='scss'>
+.admin-users-table {
+  padding: 12px 16px;
+}
 
+.admin-users-row {
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+
+  &:first-child {
+    border-top: none;
+  }
+}
+
+.admin-filter-select {
+  max-width: 300px;
+  min-width: 220px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: 4px;
+  background: #fff;
+}
 </style>

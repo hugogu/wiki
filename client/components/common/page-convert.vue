@@ -1,6 +1,7 @@
 <template lang='pug'>
   v-dialog(
-    v-model='isShown'
+    :value='isShown'
+    @input='isShown = $event'
     max-width='550'
     persistent
     overlay-color='blue-grey darken-4'

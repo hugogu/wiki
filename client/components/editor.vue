@@ -1,7 +1,7 @@
 <template lang="pug">
   v-app.editor(:dark='$vuetify.theme.dark')
     nav-header(dense)
-      template(v-slot:mid)
+      template(v-slot:mid='slotProps')
         v-text-field.editor-title-input(
           dark
           solo
@@ -12,7 +12,7 @@
           dense
           full-width
         )
-      template(v-slot:actions)
+      template(v-slot:actions='slotProps')
         v-btn.mr-3.animated.fadeIn(color='amber', outlined, small, v-if='isConflict', @click='openConflict')
           .overline.amber--text.mr-3 Conflict
           status-indicator(intermediary, pulse)
@@ -45,13 +45,36 @@
           span.white--text(v-if='$vuetify.breakpoint.lgAndUp') {{ $t('common:actions.close') }}
         v-divider.ml-3(vertical)
     v-main
-      component(:is='currentEditor', :save='save')
-      editor-modal-properties(v-model='dialogProps')
-      editor-modal-editorselect(v-model='dialogEditorSelector')
-      editor-modal-unsaved(v-model='dialogUnsaved', @discard='exitGo')
-      component(:is='activeModal')
+      component(v-if='currentEditor', :is='currentEditor', :save='save')
+      editor-modal-properties(
+        :modelValue='dialogProps'
+        :value='dialogProps'
+        @input='dialogProps = $event'
+        @update:modelValue='dialogProps = $event'
+      )
+      editor-modal-editorselect(
+        :modelValue='dialogEditorSelector'
+        :value='dialogEditorSelector'
+        @input='dialogEditorSelector = $event'
+        @update:modelValue='dialogEditorSelector = $event'
+      )
+      editor-modal-unsaved(
+        :modelValue='dialogUnsaved'
+        :value='dialogUnsaved'
+        @input='dialogUnsaved = $event'
+        @update:modelValue='dialogUnsaved = $event'
+        @discard='exitGo'
+      )
+      component(v-if='activeModal', :is='activeModal')
 
-    loader(v-model='dialogProgress', :title='$t(`editor:save.processing`)', :subtitle='$t(`editor:save.pleaseWait`)')
+    loader(
+      :modelValue='dialogProgress'
+      :value='dialogProgress'
+      @input='dialogProgress = $event'
+      @update:modelValue='dialogProgress = $event'
+      :title='$t(`editor:save.processing`)'
+      :subtitle='$t(`editor:save.pleaseWait`)'
+    )
     notify
 </template>
 
@@ -224,6 +247,7 @@ export default {
     }
   },
   created() {
+    document.documentElement.setAttribute('data-editor-created', '1')
     this.$store.set('page/id', this.pageId)
     this.$store.set('page/description', this.description)
     this.$store.set('page/isPublished', this.isPublished)
@@ -245,16 +269,19 @@ export default {
     this.$store.set('page/effectivePermissions', decodeBase64JSON(this.effectivePermissions, {}))
   },
   mounted() {
+    document.documentElement.setAttribute('data-editor-mounted', 'start')
     this.$store.set('editor/mode', this.initMode || 'create')
+    document.documentElement.setAttribute('data-editor-mounted', 'mode')
 
     this.initContentParsed = this.initContent ? Base64.decode(this.initContent) : ''
     this.$store.set('editor/content', this.initContentParsed)
+    document.documentElement.setAttribute('data-editor-mounted', 'content')
     if (this.mode === 'create' && !this.initEditor) {
-      _.delay(() => {
-        this.dialogEditorSelector = true
-      }, 500)
+      document.documentElement.setAttribute('data-editor-mounted', 'editor')
+      this.currentEditor = 'editorMarkdown'
     } else {
       this.$store.set('editor/editor', `editor${_.startCase(this.initEditor || 'markdown')}`)
+      document.documentElement.setAttribute('data-editor-mounted', 'editor')
     }
 
     window.onbeforeunload = () => {
@@ -264,12 +291,14 @@ export default {
         return undefined
       }
     }
+    document.documentElement.setAttribute('data-editor-mounted', 'beforeunload')
 
     this.editorEventUnsubscribers = [
       onEditorEvent(EDITOR_EVENTS.RESET_CONFLICT, () => {
         this.isConflict = false
       })
     ]
+    document.documentElement.setAttribute('data-editor-mounted', 'events')
 
     // this.$store.set('editor/mode', 'edit')
     // this.currentEditor = `editorApi`

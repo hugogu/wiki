@@ -31,7 +31,7 @@
                 )
                 v-card.radius-7(flat, :class='trailBgColor(ph.actionType)')
                   v-toolbar(flat, :color='trailBgColor(ph.actionType)', height='40')
-                    .caption(:title='$formatMoment(ph.versionDate, `LLL`)') {{ $formatMoment(ph.versionDate, 'll') }}
+                    .caption(:title='formatMoment(ph.versionDate, `LLL`)') {{ formatMoment(ph.versionDate, 'll') }}
                     v-divider.mx-3(vertical)
                     .caption(v-if='ph.actionType === `edit`') Edited by #[strong {{ ph.authorName }}]
                     .caption(v-else-if='ph.actionType === `move`') Moved from #[strong {{ph.valueBefore}}] to #[strong {{ph.valueAfter}}] by #[strong {{ ph.authorName }}]
@@ -40,8 +40,8 @@
                     .caption(v-else) Unknown Action by #[strong {{ ph.authorName }}]
                     v-spacer
                     v-menu(offset-x, left)
-                      template(v-slot:activator='{ on }')
-                        v-btn.mr-2.radius-4(icon, v-on='on', small, tile): v-icon mdi-dots-horizontal
+                      template(v-slot:activator='menuSlot')
+                        v-btn.mr-2.radius-4(icon, v-on='menuSlot.on', small, tile): v-icon mdi-dots-horizontal
                       v-list(dense, nav).history-promptmenu
                         v-list-item(@click='setDiffSource(ph.versionId)', :disabled='(ph.versionId >= diffTarget && diffTarget !== 0) || ph.versionId === 0')
                           v-list-item-avatar(size='24'): v-avatar A
@@ -116,7 +116,7 @@
         .dialog-header.is-orange {{$t('history:restore.confirmTitle')}}
         v-card-text.pa-4
           i18next(tag='span', path='history:restore.confirmText')
-            strong(place='date') {{ $formatMoment(restoreTarget.versionDate, 'LLL') }}
+            strong(place='date') {{ formatMoment(restoreTarget.versionDate, 'LLL') }}
         v-card-actions
           v-spacer
           v-btn(text, @click='isRestoreConfirmDialogShown = false', :disabled='restoreLoading') {{$t('common:actions.cancel')}}
@@ -333,6 +333,13 @@ export default {
     this.$store.set('page/effectivePermissions', decodeBase64JSON(this.effectivePermissions, {}))
   },
   methods: {
+    formatMoment (value, format = 'LLL') {
+      if (typeof this.$formatMoment === 'function') {
+        return this.$formatMoment(value, format)
+      }
+
+      return this.$helpers?.formatMoment ? this.$helpers.formatMoment(value, format) : ''
+    },
     async loadVersion (versionId) {
       this.$store.commit(`loadingStart`, 'history-version-' + versionId)
       const resp = await this.$apollo.query({

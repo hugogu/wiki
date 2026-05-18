@@ -24,7 +24,7 @@
 
     v-content(:class='$vuetify.theme.dark ? "grey darken-4" : "grey lighten-5"')
       transition(name='profile-router')
-        router-view
+        component(v-if='currentRouteComponent', :is='currentRouteComponent')
 
     nav-footer
     notify
@@ -59,6 +59,13 @@ export default {
   data() {
     return {
       profileDrawerShown: true
+    }
+  },
+  computed: {
+    currentRouteComponent () {
+      const matched = this.$route?.matched || []
+      const record = matched[matched.length - 1]
+      return record?.components?.default || record?.component || null
     }
   },
   router,

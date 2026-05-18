@@ -26,7 +26,7 @@
 
       v-flex.animated.fadeInUp.wait-p2s(xs12, lg9)
         transition(name='admin-router')
-          component(:is='selectedTool')
+          component(v-if='selectedTool', :is='selectedTool')
 
 </template>
 

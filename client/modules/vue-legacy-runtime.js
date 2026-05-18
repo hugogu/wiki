@@ -68,6 +68,32 @@ export function createLegacyVueRuntime ({
         } else if (this.$parent?.$apolloProvider) {
           this.$apolloProvider = this.$parent.$apolloProvider
         }
+
+        const ownI18n = typeof this.$options.i18n === 'function'
+          ? this.$options.i18n()
+          : this.$options.i18n
+
+        if (ownI18n) {
+          this.$i18n = ownI18n
+        } else if (this.$parent?.$i18n) {
+          this.$i18n = this.$parent.$i18n
+        }
+
+        if (typeof this.$t !== 'function' && this.$i18n?.i18next?.t) {
+          this.$t = (...args) => this.$i18n.i18next.t(...args)
+        }
+
+        const ownVuetify = typeof this.$options.vuetify === 'function'
+          ? this.$options.vuetify()
+          : this.$options.vuetify
+
+        const ownVuetifyBridge = ownVuetify?.framework || ownVuetify
+
+        if (ownVuetifyBridge) {
+          this.$vuetify = ownVuetifyBridge
+        } else if (this.$parent?.$vuetify) {
+          this.$vuetify = this.$parent.$vuetify
+        }
       }
     })
 

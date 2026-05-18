@@ -1,11 +1,11 @@
 <template lang='pug'>
   v-app.admin
     nav-header(hide-search)
-      template(v-slot:mid)
+      template(v-slot:mid='slotProps')
         v-spacer
         .overline.grey--text {{$t('admin:adminArea')}}
         v-spacer
-    v-navigation-drawer.pb-0.admin-sidebar(v-model='adminDrawerShown', app, fixed, clipped, :right='$vuetify.rtl', permanent, width='300', :class='$vuetify.theme.dark ? `grey darken-4` : ``')
+    v-navigation-drawer.pb-0.admin-sidebar(:value='adminDrawerShown', @input='adminDrawerShown = $event', app, fixed, clipped, :right='$vuetify.rtl', permanent, width='300', :class='$vuetify.theme.dark ? `grey darken-4` : ``')
       vue-scroll(:ops='scrollStyle')
         v-list.radius-0(dense, nav)
           v-list-item(to='/dashboard', color='primary')
@@ -100,7 +100,7 @@
               no-action
               v-if='hasPermission([`manage:system`, `manage:api`])'
               )
-              template(v-slot:activator)
+              template(v-slot:activator='slotProps')
                 v-list-item
                   v-list-item-avatar(size='24', tile): v-icon mdi-dev-to
                   v-list-item-title {{ $t('admin:dev.title') }}
@@ -120,7 +120,7 @@
 
     v-main(:class='$vuetify.theme.dark ? "grey darken-5" : "grey lighten-5"')
       transition(name='admin-router')
-        router-view
+        component(v-if='currentRouteComponent', :is='currentRouteComponent')
 
     nav-footer
     notify
@@ -175,12 +175,40 @@ export default {
     }
   },
   computed: {
+    currentRouteComponent () {
+      const matched = this.$route?.matched || []
+      const record = matched[matched.length - 1]
+      return record?.components?.default || record?.component || null
+    },
     info: sync('admin/info'),
     permissions: get('user/permissions')
   },
   router,
   created() {
+    document.documentElement.setAttribute('data-admin-created', '1')
     this.$store.commit('page/SET_MODE', 'admin')
+  },
+  async mounted () {
+    document.documentElement.setAttribute('data-admin-mounted', '1')
+    document.documentElement.setAttribute('data-admin-has-router', this.$router ? '1' : '0')
+
+    if (this.$router) {
+      const browserPath = window.location.pathname.replace(/^\/a/, '') || '/'
+      const desiredPath = browserPath === '/' ? '/dashboard' : `${browserPath}${window.location.search || ''}${window.location.hash || ''}`
+
+      if (this.$route?.fullPath !== desiredPath) {
+        try {
+          await this.$router.replace(desiredPath)
+        } catch (err) {}
+      }
+    }
+
+    document.documentElement.setAttribute('data-admin-route-path', this.$route?.fullPath || this.$route?.path || 'no-route')
+    document.documentElement.setAttribute('data-admin-route-matched', String(this.$route?.matched?.length || 0))
+  },
+  errorCaptured (err, vm, info) {
+    document.documentElement.setAttribute('data-admin-error', `${info}: ${err.message}`)
+    return false
   },
   methods: {
     hasPermission(prm) {

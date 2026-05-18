@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-dialog(v-model='isShown', max-width='550')
+  v-dialog(:value='isShown', @input='isShown = $event', max-width='550')
     v-card
       .dialog-header.is-short.is-red
         v-icon.mr-2(color='white') mdi-alert

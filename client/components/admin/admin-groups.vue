@@ -12,55 +12,20 @@
             v-icon mdi-help-circle
           v-btn.animated.fadeInDown.wait-p2s.mx-3(color='grey', outlined, @click='refresh', icon)
             v-icon mdi-refresh
-          v-dialog(v-model='newGroupDialog', max-width='500')
-            template(v-slot:activator='{ on }')
-              v-btn.animated.fadeInDown(color='primary', depressed, v-on='on', large)
-                v-icon(left) mdi-plus
-                span New Group
-            v-card
-              .dialog-header.is-short New Group
-              v-card-text.pt-5
-                v-text-field.md2(
-                  outlined
-                  prepend-icon='mdi-account-group'
-                  v-model='newGroupName'
-                  label='Group Name'
-                  counter='255'
-                  @keyup.enter='createGroup'
-                  @keyup.esc='newGroupDialog = false'
-                  ref='groupNameIpt'
-                  )
-              v-card-chin
-                v-spacer
-                v-btn(text, @click='newGroupDialog = false') Cancel
-                v-btn(color='primary', @click='createGroup') Create
+          v-btn.animated.fadeInDown(color='primary', depressed, @click='promptNewGroup', large)
+            v-icon(left) mdi-plus
+            span New Group
         v-card.mt-3.animated.fadeInUp
-          v-data-table(
-            :items='groups'
-            :headers='headers'
-            :search='search'
-            :page='pagination'
-            @update:page='pagination = $event'
-            :items-per-page='15'
-            :loading='loading'
-            @page-count='pageCount = $event'
-            must-sort,
-            hide-default-footer
-          )
-            template(v-slot:item='props')
-              tr.is-clickable(:active='props.selected', @click='$router.push("/groups/" + props.item.id)')
-                td {{ props.item.id }}
-                td: strong {{ props.item.name }}
-                td {{ props.item.userCount }}
-                td {{ $formatMoment(props.item.createdAt, 'calendar') }}
-                td {{ $formatMoment(props.item.updatedAt, 'calendar') }}
-                td
-                  v-tooltip(left, v-if='props.item.isSystem')
-                    template(v-slot:activator='{ on }')
-                      v-icon(v-on='on') mdi-lock-outline
-                    span System Group
-            template(v-slot:no-data)
-              v-alert.ma-3(icon='mdi-alert', :value='true', outline) No groups to display.
+          v-progress-linear(v-if='loading', indeterminate, color='primary')
+          .admin-groups-table(v-else-if='pagedGroups.length > 0')
+            .admin-groups-row.is-clickable(v-for='group in pagedGroups', :key='group.id', @click='$router.push(`/groups/` + group.id)')
+              .body-2
+                strong {{ group.id }} - {{ group.name }}
+              .caption Users: {{ group.userCount }}
+              .caption Created: {{ formatMoment(group.createdAt, 'calendar') }}
+              .caption Updated: {{ formatMoment(group.updatedAt, 'calendar') }}
+              .caption(v-if='group.isSystem') System Group
+          v-alert.ma-3(v-else, icon='mdi-alert', :value='true', outline) No groups to display.
           .text-xs-center.py-2(v-if='pageCount > 1')
             v-pagination(v-model='pagination', :length='pageCount')
 </template>
@@ -72,38 +37,71 @@ import groupsQuery from 'gql/admin/groups/groups-query-list.gql'
 import createGroupMutation from 'gql/admin/groups/groups-mutation-create.gql'
 
 export default {
+  mounted () {
+    this.loadGroups()
+  },
   data() {
     return {
-      newGroupDialog: false,
       newGroupName: '',
       selectedGroup: {},
       pagination: 1,
-      pageCount: 0,
       groups: [],
-      headers: [
-        { text: 'ID', value: 'id', width: 80, sortable: true },
-        { text: 'Name', value: 'name' },
-        { text: 'Users', value: 'userCount', width: 200 },
-        { text: 'Created', value: 'createdAt', width: 250 },
-        { text: 'Last Updated', value: 'updatedAt', width: 250 },
-        { text: '', value: 'isSystem', width: 20, sortable: false }
-      ],
       search: '',
       loading: false
     }
   },
   watch: {
-    newGroupDialog(newValue, oldValue) {
-      if (newValue) {
-        this.$nextTick(() => {
-          this.$refs.groupNameIpt.focus()
-        })
-      }
+  },
+  computed: {
+    sortedGroups () {
+      const groups = _.isArray(this.groups) ? this.groups : []
+      return _.orderBy(groups, ['id'], ['asc'])
+    },
+    pagedGroups () {
+      const start = (this.pagination - 1) * 15
+      return this.sortedGroups.slice(start, start + 15)
+    },
+    pageCount () {
+      return Math.max(1, Math.ceil(this.sortedGroups.length / 15))
     }
   },
   methods: {
+    async promptNewGroup () {
+      const name = window.prompt('Group Name', this.newGroupName || '')
+
+      if (name === null) {
+        return
+      }
+
+      this.newGroupName = name
+      await this.createGroup()
+    },
+    formatMoment (value, format = 'LLL') {
+      return this.$helpers?.formatMoment
+        ? this.$helpers.formatMoment(value, format)
+        : (typeof this.$formatMoment === 'function' ? this.$formatMoment(value, format) : '')
+    },
+    async loadGroups () {
+      this.loading = true
+      this.$store.commit('loadingStart', 'admin-groups-refresh')
+
+      try {
+        const resp = await this.$apollo.query({
+          query: groupsQuery,
+          fetchPolicy: 'network-only'
+        })
+
+        this.groups = _.get(resp, 'data.groups.list', [])
+        document.documentElement.setAttribute('data-admin-groups-len', String(this.groups.length))
+      } catch (err) {
+        this.$store.commit('pushGraphError', err)
+      } finally {
+        this.loading = false
+        this.$store.commit('loadingStop', 'admin-groups-refresh')
+      }
+    },
     async refresh() {
-      await this.$apollo.queries.groups.refetch()
+      await this.loadGroups()
       this.$store.commit('showNotification', {
         message: 'Groups have been refreshed.',
         style: 'success',
@@ -119,7 +117,6 @@ export default {
         })
         return
       }
-      this.newGroupDialog = false
       try {
         await this.$apollo.mutate({
           mutation: createGroupMutation,
@@ -151,21 +148,21 @@ export default {
         this.$store.commit('pushGraphError', err)
       }
     }
-  },
-  apollo: {
-    groups: {
-      query: groupsQuery,
-      fetchPolicy: 'network-only',
-      update: (data) => data.groups.list,
-      watchLoading (isLoading) {
-        this.loading = isLoading
-        this.$store.commit(`loading${isLoading ? 'Start' : 'Stop'}`, 'admin-groups-refresh')
-      }
-    }
   }
 }
 </script>
 
 <style lang='scss'>
+.admin-groups-table {
+  padding: 12px 16px;
+}
 
+.admin-groups-row {
+  padding: 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+
+  &:first-child {
+    border-top: none;
+  }
+}
 </style>

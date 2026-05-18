@@ -3,6 +3,7 @@ import VueClipboards from 'vue-clipboards'
 import Vuetify from 'vuetify'
 import VueMoment from 'vue-moment'
 import Vuescroll from 'vuescroll/dist/vuescroll-native'
+import { installVueApolloCompatMixin } from './vue-apollo-compat'
 import {
   applyGlobalPlugins,
   assignGlobalProperties,
@@ -23,6 +24,7 @@ export function installLegacyPlugins (Vue, { localization, helpers, moment, velo
     [VueMoment, { moment }],
     Vuescroll
   ])
+  installVueApolloCompatMixin(Vue)
 
   assignGlobalProperties(Vue, {
     Velocity: velocity

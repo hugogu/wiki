@@ -58,39 +58,33 @@
             v-spacer
             .overline {{$t('admin:dashboard.recentPages')}}
             v-spacer
-          v-data-table.pb-2(
-            :items='recentPages'
-            :headers='recentPagesHeaders'
-            :loading='recentPagesLoading'
-            hide-default-footer
-            hide-default-header
-            )
-            template(v-slot:item='props')
-              tr.is-clickable(:active='props.selected', @click='$router.push(`/pages/` + props.item.id)')
-                td
-                  .body-2: strong {{ props.item.title }}
-                td.admin-pages-path
-                  v-chip(label, small, :color='$vuetify.theme.dark ? `grey darken-4` : `grey lighten-4`') {{ props.item.locale }}
-                  span.ml-2.grey--text(:class='$vuetify.theme.dark ? `text--lighten-1` : `text--darken-2`') / {{ props.item.path }}
-                td.text-right.caption(width='250') {{ $formatMoment(props.item.updatedAt, 'calendar') }}
+          v-progress-linear(v-if='recentPagesLoading', indeterminate, color='primary')
+          .admin-simple-table(v-else-if='recentPages.length > 0')
+            table
+              tbody
+                tr.is-clickable(v-for='page in recentPages', :key='page.id', @click='$router.push(`/pages/` + page.id)')
+                  td
+                    .body-2: strong {{ page.title }}
+                  td.admin-pages-path
+                    v-chip(label, small, :color='$vuetify.theme.dark ? `grey darken-4` : `grey lighten-4`') {{ page.locale }}
+                    span.ml-2.grey--text(:class='$vuetify.theme.dark ? `text--lighten-1` : `text--darken-2`') / {{ page.path }}
+                  td.text-right.caption(width='250') {{ formatMoment(page.updatedAt, 'calendar') }}
+          v-alert.ma-3(v-else, icon='mdi-information-outline', outlined, dense) {{$t('admin:dashboard.recentPages')}}: 0
       v-flex(xs12, xl6)
         v-card.radius-7.animated.fadeInUp.wait-p4s
           v-toolbar(:color='$vuetify.theme.dark ? `grey darken-2` : `grey lighten-5`', dense, flat)
             v-spacer
             .overline {{$t('admin:dashboard.lastLogins')}}
             v-spacer
-          v-data-table.pb-2(
-            :items='lastLogins'
-            :headers='lastLoginsHeaders'
-            :loading='lastLoginsLoading'
-            hide-default-footer
-            hide-default-header
-            )
-            template(v-slot:item='props')
-              tr.is-clickable(:active='props.selected', @click='$router.push(`/users/` + props.item.id)')
-                td
-                  .body-2: strong {{ props.item.name }}
-                td.text-right.caption(width='250') {{ $formatMoment(props.item.lastLoginAt, 'calendar') }}
+          v-progress-linear(v-if='lastLoginsLoading', indeterminate, color='primary')
+          .admin-simple-table(v-else-if='lastLogins.length > 0')
+            table
+              tbody
+                tr.is-clickable(v-for='user in lastLogins', :key='user.id', @click='$router.push(`/users/` + user.id)')
+                  td
+                    .body-2: strong {{ user.name }}
+                  td.text-right.caption(width='250') {{ formatMoment(user.lastLoginAt, 'calendar') }}
+          v-alert.ma-3(v-else, icon='mdi-information-outline', outlined, dense) {{$t('admin:dashboard.lastLogins')}}: 0
 
       v-flex(xs12)
         v-card.dashboard-contribute.animated.fadeInUp.wait-p4s
@@ -144,8 +138,23 @@ export default {
     info: get('admin/info'),
     permissions: get('user/permissions')
   },
+  created () {
+    document.documentElement.setAttribute('data-admin-dashboard-created', '1')
+  },
+  mounted () {
+    document.documentElement.setAttribute('data-admin-dashboard-mounted', '1')
+  },
+  errorCaptured (err, vm, info) {
+    document.documentElement.setAttribute('data-admin-dashboard-error', `${info}: ${err.message}`)
+    return false
+  },
   methods: {
     round(val) { return Math.round(val) },
+    formatMoment (value, format = 'LLL') {
+      return this.$helpers?.formatMoment
+        ? this.$helpers.formatMoment(value, format)
+        : (typeof this.$formatMoment === 'function' ? this.$formatMoment(value, format) : '')
+    },
     hasPermission(prm) {
       if (_.isArray(prm)) {
         return _.some(prm, p => {
@@ -216,6 +225,23 @@ export default {
   .v-card__text {
     overflow: hidden;
     position: relative;
+  }
+}
+
+.admin-simple-table {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(0, 0, 0, .08);
+    vertical-align: middle;
+  }
+
+  tr:first-child td {
+    border-top: none;
   }
 }
 

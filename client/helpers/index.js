@@ -114,5 +114,15 @@ export default {
       $helpers: helpers
     })
     defineGlobalProperties(appOrVue, descriptors)
+
+    if (typeof appOrVue?.mixin === 'function') {
+      appOrVue.mixin({
+        methods: {
+          $formatMoment (value, format = 'LLL') {
+            return helpers.formatMoment(value, format)
+          }
+        }
+      })
+    }
   }
 }

@@ -10,8 +10,17 @@ const origWithCtx = typeof VueModule.withCtx === 'function'
   : (fn) => fn
 
 export function withCtx (fn, ctx) {
-  const wrapped = function (props) {
-    return fn.call(this, props === undefined ? {} : props)
+  const ownerInstance = ctx || VueModule.getCurrentInstance?.() || null
+  const ownerProxy = ownerInstance?.proxy || ownerInstance || null
+
+  const wrapped = function (...args) {
+    if (args.length === 0) {
+      args = [{}]
+    } else if (args[0] === undefined) {
+      args[0] = {}
+    }
+
+    return fn.apply(ownerProxy || this, args)
   }
 
   return origWithCtx(wrapped, ctx)
