@@ -1,8 +1,8 @@
 import VueApollo from 'vue-apollo'
-import VueClipboards from 'vue-clipboards'
+import VueClipboards from './compat/vue-clipboards'
 import Vuetify from 'vuetify'
-import VueMoment from 'vue-moment'
-import Vuescroll from 'vuescroll/dist/vuescroll-native'
+import VueMoment from './compat/vue-moment'
+import Vuescroll from './compat/vuescroll-native'
 import {
   applyGlobalPlugins,
   assignGlobalProperties,

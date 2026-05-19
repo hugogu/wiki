@@ -57,7 +57,7 @@ export function createLegacyAppComponentRegistry (getThemeComponentLoader) {
     { name: 'VCardInfo', loader: () => import(/* webpackPrefetch: true, webpackChunkName: "ui-extra" */ '../components/common/v-card-info.vue') },
     { name: 'Welcome', loader: () => import(/* webpackChunkName: "welcome" */ '../components/welcome.vue') },
     { name: 'NavFooter', loader: () => getThemeComponentLoader('nav-footer')() },
-    { name: 'Page', loader: () => getThemeComponentLoader('page')() }
+    { name: 'Page', loader: () => getThemeComponentLoader('theme-page')() }
   ]
 }
 
