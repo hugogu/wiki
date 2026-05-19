@@ -157,13 +157,11 @@ import _ from 'lodash'
 
 import tagsQuery from 'gql/common/common-pages-query-tags.gql'
 import pagesQuery from 'gql/common/common-pages-query-list.gql'
-import { createLegacyRouter } from '../modules/router-legacy'
+import { createTagsRouter } from '../router/tags'
 
 /* global siteLangs */
 
-const router = createLegacyRouter({
-  base: '/t'
-})
+const router = createTagsRouter()
 
 export default {
   i18nOptions: { namespaces: 'tags' },

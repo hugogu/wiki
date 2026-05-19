@@ -32,27 +32,9 @@
 </template>
 
 <script>
-import { createLegacyRouter } from '../modules/router-legacy'
-import { getWikiInstance } from '../modules/wiki-instance'
-import { profileRoutes } from '../router/routes-profile'
+import { createProfileRouter } from '../router/profile'
 
-const router = createLegacyRouter({
-  base: '/p',
-  routes: profileRoutes,
-  beforeEach: (to, from, next) => {
-    const wiki = getWikiInstance()
-    if (wiki) {
-      wiki.$store.commit('loadingStart', 'profile')
-    }
-    next()
-  },
-  afterEach: () => {
-    const wiki = getWikiInstance()
-    if (wiki) {
-      wiki.$store.commit('loadingStop', 'profile')
-    }
-  }
-})
+const router = createProfileRouter()
 
 export default {
   i18nOptions: { namespaces: 'profile' },
