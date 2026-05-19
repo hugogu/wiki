@@ -11,10 +11,10 @@ import { clearWikiInstance, setWikiInstance } from './modules/wiki-instance'
 clearWikiInstance()
 window.boot = boot
 
-installLegacySetupPlugins(legacyVueRegistrationTarget)
-registerLegacySetupComponents(legacyVueRegistrationTarget)
-
 let bootstrap = () => {
+  installLegacySetupPlugins(legacyVueRegistrationTarget)
+  registerLegacySetupComponents(legacyVueRegistrationTarget)
+
   setWikiInstance(mountLegacyVueApp(createLegacySetupAppOptions({
     vuetify: createLegacyVuetify()
   })))

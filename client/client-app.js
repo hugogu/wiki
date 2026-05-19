@@ -151,14 +151,6 @@ window.graphQL = new ApolloClient({
   connectToDevTools: import.meta.env.DEV
 })
 
-installLegacyPlugins(legacyVueRegistrationTarget, {
-  localization,
-  helpers,
-  moment,
-  velocity: Velocity
-})
-registerLegacyAppComponents(legacyVueRegistrationTarget, getThemeComponentLoader)
-
 let bootstrap = () => {
   // ====================================
   // Notifications
@@ -173,6 +165,14 @@ let bootstrap = () => {
   // ====================================
   // Bootstrap Vue
   // ====================================
+
+  installLegacyPlugins(legacyVueRegistrationTarget, {
+    localization,
+    helpers,
+    moment,
+    velocity: Velocity
+  })
+  registerLegacyAppComponents(legacyVueRegistrationTarget, getThemeComponentLoader)
 
   const i18n = localization.init()
 
