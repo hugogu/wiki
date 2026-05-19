@@ -26,7 +26,7 @@
               handle='.is-handle'
               direction='vertical'
               )
-              transition-group
+              transition-group(tag='span')
                 v-list-item(
                   v-for='(str, idx) in activeStrategies'
                   :key='str.key'
