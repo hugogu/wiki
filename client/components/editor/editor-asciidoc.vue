@@ -550,7 +550,7 @@ $editor-ascii-height-mobile: calc(100vh - 112px - 16px);
         overflow:hidden;
       }
     }
-    &-enter, &-leave-to {
+    &-enter-from, &-leave-to {
       max-width: 0;
     }
 

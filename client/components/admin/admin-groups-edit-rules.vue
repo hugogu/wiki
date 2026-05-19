@@ -302,7 +302,7 @@ export default {
   &-enter-active, &-leave-active {
     transition: all .5s ease;
   }
-  &-enter, &-leave-to {
+  &-enter-from, &-leave-to {
     opacity: 0;
   }
 

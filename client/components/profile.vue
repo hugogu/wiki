@@ -60,7 +60,7 @@ export default {
   &-enter-active {
     transition-delay: .25s;
   }
-  &-enter, &-leave-to {
+  &-enter-from, &-leave-to {
     opacity: 0;
   }
 }
